@@ -7,6 +7,17 @@ import httplib
 import unittest
 import md5
 
+"""
+If lifted there are two references which must be removed
+
+The first is the two imports, as these are speicifc to this project
+the second is in the CacheHandler which will set where the cache is located
+
+Easier than modify the multiple calling routines elsewhere
+"""
+import lazylibrarian
+import logger
+
 import StringIO
 
 __version__ = (0,1)
@@ -54,7 +65,8 @@ class CacheHandler(urllib2.BaseHandler):
     response is returned, saving time, resources and bandwith"""
     def __init__(self,cacheLocation):
         """The location of the cache directory"""
-        self.cacheLocation = cacheLocation
+        self.cacheLocation = lazylibrarian.PROG_DIR+'/'+cacheLocation
+        logger.debug('Setting query cache location to %s ' % self.cacheLocation)
         if not os.path.exists(self.cacheLocation):
             os.mkdir(self.cacheLocation)
             
