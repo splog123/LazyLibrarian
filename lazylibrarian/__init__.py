@@ -313,10 +313,10 @@ def initialize():
             LOGLEVEL=2    #If not set in Config, then lets set to DEBUG
         else:
             LOGLEVEL = CFGLOGLEVEL  #Config setting picked up
+        LOGSIZE = check_setting_int(CFG, 'General', 'logsize', 51200)
+        LOGCOUNT = check_setting_int(CFG, 'General', 'logcount', 5)
             
-            
-            
-        logger.lazylibrarian_log.initLogger(loglevel=LOGLEVEL)
+        logger.lazylibrarian_log.initLogger(loglevel=LOGLEVEL, logsize=LOGSIZE, logcount=LOGCOUNT)
         logger.info("Log level set to [%s]- Log Directory is [%s] - Config level is [%s]" % (LOGLEVEL,LOGDIR,CFGLOGLEVEL))
 
         MATCH_RATIO = check_setting_int(CFG, 'General', 'match_ratio', 80)
@@ -325,8 +325,6 @@ def initialize():
         HTTP_PASS = check_setting_str(CFG, 'General', 'http_pass', '')
         HTTP_ROOT = check_setting_str(CFG, 'General', 'http_root', '')
         HTTP_LOOK = check_setting_str(CFG, 'General', 'http_look', 'default')
-
-
 
         LAUNCH_BROWSER = bool(check_setting_int(CFG, 'General', 'launch_browser', 1))
 	

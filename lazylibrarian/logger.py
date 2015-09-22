@@ -18,14 +18,16 @@ class RotatingLogger(object):
         self.max_size = max_size
         self.max_files = max_files
 
-    def initLogger(self, loglevel=1):
+    def initLogger(self, loglevel=1, logsize=51200, logcount=5):
 
         l = logging.getLogger('lazylibrarian')
         l.setLevel(logging.DEBUG)
         
 
         self.filename = os.path.join(lazylibrarian.LOGDIR, self.filename)
-
+        self.max_size = logsize
+        self.max_files = logcount
+        
         filehandler = handlers.RotatingFileHandler(self.filename, maxBytes=self.max_size, backupCount=self.max_files)
         filehandler.setLevel(logging.DEBUG)
         
@@ -66,7 +68,7 @@ class RotatingLogger(object):
         else:
             logger.error(message)
 
-lazylibrarian_log = RotatingLogger('lazylibrarian.log', lazylibrarian.LOGSIZE, lazylibrarian.LOGCOUNT)
+lazylibrarian_log = RotatingLogger('lazylibrarian.log')
 
 def debug(message):
     lazylibrarian_log.log(message, level='DEBUG')
