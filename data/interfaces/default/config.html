@@ -37,11 +37,21 @@
                   <div>
                   <label>Port:</label><input type="text" name="http_port" value="${config['http_port']}" size="10" maxlength="40">
                   </div>
+                  <div>
 		  <label>Web Root:</label><input type="text" name="http_root" value="${config['http_root']}" size="20" maxlength="40">
 		  </div>
                   <br>
                   <br>
-                  <label>Logdir:</label><input type="text" name="logdir" value="${config['logdir']}" size="50"><br>
+                  <div>
+                  <label>Log directory:</label><input type="text" name="logdir" value="${config['logdir']}" size="50">
+                  </div>
+                  <div>
+                  <label>Log file max size (bytes):</label><input type="text" name="logsize" value="${config['logsize']}" size="20">
+                  </div>
+                  <div>
+                  <label>Number of log files:</label><input type="text" name="logcount" value="${config['logcount']}" size="20">
+                  </div>
+                  <br>
 		  <br>
 		  <br>
 		  <div>

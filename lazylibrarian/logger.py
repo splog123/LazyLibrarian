@@ -12,7 +12,7 @@ MAX_FILES = 5
 # Simple rotating log handler that uses RotatingFileHandler
 class RotatingLogger(object):
 
-    def __init__(self, filename, max_size, max_files):
+    def __init__(self, filename, max_size=MAX_SIZE, max_files=MAX_FILES):
 
         self.filename = filename
         self.max_size = max_size
@@ -66,7 +66,7 @@ class RotatingLogger(object):
         else:
             logger.error(message)
 
-lazylibrarian_log = RotatingLogger('lazylibrarian.log', MAX_SIZE, MAX_FILES)
+lazylibrarian_log = RotatingLogger('lazylibrarian.log', lazylibrarian.LOGSIZE, lazylibrarian.LOGCOUNT)
 
 def debug(message):
     lazylibrarian_log.log(message, level='DEBUG')
