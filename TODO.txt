@@ -1,0 +1,27 @@
+Bugs and Features:
+
+GH issue  1:  code: remove references to headphones. Why are they still around?
+GH issue  2:  logging: expose log file size and number in config
+GH issue  3:  logging: add log admin buttons to gui (eg delete logs)
+GH issue  4:  download: implement retention per search provider
+GH issue  5:  download: disable nzb search in general category, it usually finds large audiobooks instead
+GH issue  6:  download: must fetch all nzbs from provider and try them all in turn, like how couchpotato does it. 
+                        current code seems to try the first one then never proceed beyond
+GH issue  7:  download: track nzb's snatched and store them. do not use them again. 
+                        Implement failed download handling - check how headphones et all does it
+GH issue  8:  author update: add progress counter (Book x of y URL: http://...)
+                             list number of books found for author at start
+GH issue  9:  author update: add option to delete .AuthorCache and try again on failure
+GH issue 10:  author update: search regex must not be verbose, it ignores whitespace. 
+                             Authors with - in name cannot be matched
+GH issue 11:  author update: add book without isbn (global and per author in db)
+GH issue 12:  author update: add book with lang=none|unknown (global and per author in db)
+GH issue 13:  author update: add book of type anthology/collection/comic/manga/etc (global and per author in db)
+GH issue 14:  author update: add per-author language option (eg fetch french only for dumas, not globally)
+GH issue 15:  author update: option to ignore author = none/unknown/various/anonymous etc
+GH issue 16:  book search: handle articles (the, a, an) properly. Do search on title with article removed
+GH issue 17:  book search: Parenthesized metadata in book titles
+GH issue 18:  gui: fix links. Some are internal, some go to GB/GR, apparently at random. It's not obvious
+GH issue 19:  gui: ignored book button does not toggle when clicked. To revert, must refresh author page
+GH issue 20:  download: find a way to track empty nzbs from UC when daily limit is exceeded
+GH issue 21:  code: make GB/GR objects descended from a base class
