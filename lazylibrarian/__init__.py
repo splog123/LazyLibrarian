@@ -43,6 +43,8 @@ CFG = None
 
 LOGDIR = None
 LOGLIST = []
+LOGSIZE = 51200
+LOGCOUNT = 5
 #Info 1, Debug 2 - Really should be in the config files.
 LOGLEVEL = 2
 
@@ -264,7 +266,7 @@ def initialize():
 
     with INIT_LOCK:
 
-        global __INITIALIZED__, FULL_PATH, PROG_DIR, LOGLEVEL, DAEMON, DATADIR, CONFIGFILE, CFG, LOGDIR, HTTP_HOST, HTTP_PORT, HTTP_USER, HTTP_PASS, HTTP_ROOT, HTTP_LOOK, LAUNCH_BROWSER, LOGDIR, CACHEDIR, MATCH_RATIO, \
+        global __INITIALIZED__, FULL_PATH, PROG_DIR, LOGLEVEL, DAEMON, DATADIR, CONFIGFILE, CFG, LOGDIR, LOGSIZE, LOGCOUNT, HTTP_HOST, HTTP_PORT, HTTP_USER, HTTP_PASS, HTTP_ROOT, HTTP_LOOK, LAUNCH_BROWSER, CACHEDIR, MATCH_RATIO, \
 	    PROXY_HOST, PROXY_TYPE, \
             IMP_ONLYISBN, IMP_PREFLANG, IMP_AUTOADD, SAB_HOST, SAB_PORT, SAB_SUBDIR, SAB_API, SAB_USER, SAB_PASS, DESTINATION_DIR, DESTINATION_COPY, DOWNLOAD_DIR, SAB_CAT, USENET_RETENTION, NZB_BLACKHOLEDIR, GR_API, GB_API, BOOK_API, \
             NZBGET_HOST, NZBGET_USER, NZBGET_PASS, NZBGET_CATEGORY, NZBGET_PRIORITY, NZB_DOWNLOADER_NZBGET, \
@@ -311,10 +313,10 @@ def initialize():
             LOGLEVEL=2    #If not set in Config, then lets set to DEBUG
         else:
             LOGLEVEL = CFGLOGLEVEL  #Config setting picked up
+        LOGSIZE = check_setting_int(CFG, 'General', 'logsize', 51200)
+        LOGCOUNT = check_setting_int(CFG, 'General', 'logcount', 5)
             
-            
-            
-        logger.lazylibrarian_log.initLogger(loglevel=LOGLEVEL)
+        logger.lazylibrarian_log.initLogger(loglevel=LOGLEVEL, logsize=LOGSIZE, logcount=LOGCOUNT)
         logger.info("Log level set to [%s]- Log Directory is [%s] - Config level is [%s]" % (LOGLEVEL,LOGDIR,CFGLOGLEVEL))
 
         MATCH_RATIO = check_setting_int(CFG, 'General', 'match_ratio', 80)
@@ -324,15 +326,14 @@ def initialize():
         HTTP_ROOT = check_setting_str(CFG, 'General', 'http_root', '')
         HTTP_LOOK = check_setting_str(CFG, 'General', 'http_look', 'default')
 
-
-
         LAUNCH_BROWSER = bool(check_setting_int(CFG, 'General', 'launch_browser', 1))
 	
 	PROXY_HOST = check_setting_str(CFG, 'General','proxy_host', '')
 	PROXY_TYPE = check_setting_str(CFG, 'General','proxy_type', '')
 
         LOGDIR = check_setting_str(CFG, 'General', 'logdir', '')
-
+        LOGSIZE = check_setting_int(CFG, 'General', 'logsize', 51200)
+        LOGCOUNT = check_setting_int(CFG, 'General', 'logcount', 5)
         IMP_PREFLANG = check_setting_str(CFG, 'General', 'imp_preflang', 'en, eng, en-US')
         IMP_AUTOADD = check_setting_str(CFG, 'General', 'imp_autoadd', '')
         IMP_ONLYISBN = bool(check_setting_int(CFG, 'General', 'imp_onlyisbn', 0))
@@ -547,6 +548,8 @@ def config_write():
     new_config['General']['proxy_type'] = PROXY_TYPE
     new_config['General']['logdir'] = LOGDIR
     new_config['General']['loglevel'] = int(LOGLEVEL)
+    new_config['General']['logsize'] = int(LOGSIZE)
+    new_config['General']['logcount'] = int(LOGCOUNT)
 
     new_config['General']['match_ratio'] = MATCH_RATIO
 
