@@ -36,7 +36,7 @@ load_rc_config ${name}
 : ${lazylibrarian_pid:="${lazylibrarian_dir}/lazylibrarian.pid"}
 PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
 
-WGET="/usr/local/bin/wget"      # You need wget for this script to safely shutdown couchpotato.
+WGET="/usr/local/bin/wget"      # You need wget for this script to safely shutdown LazyLibrarian.
 HOST="localhost"                # Set LazyLibrarian address here.
 PORT="5299"                     # Set LazyLibrarian port here.
 LLUSR=""                        # Set LazyLibrarian username (if you use one) here.
