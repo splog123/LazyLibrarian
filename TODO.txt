@@ -1,7 +1,5 @@
 Bugs and Features:
 
-GH issue  1:  code: remove references to headphones. Why are they still around?
-GH issue  2:  logging: expose log file size and number in config
 GH issue  3:  logging: add log admin buttons to gui (eg delete logs)
 GH issue  4:  download: implement retention per search provider
 GH issue  5:  download: disable nzb search in general category, it usually finds large audiobooks instead
@@ -24,4 +22,3 @@ GH issue 17:  book search: Parenthesized metadata in book titles
 GH issue 18:  gui: fix links. Some are internal, some go to GB/GR, apparently at random. It's not obvious
 GH issue 19:  gui: ignored book button does not toggle when clicked. To revert, must refresh author page
 GH issue 20:  download: find a way to track empty nzbs from UC when daily limit is exceeded
-GH issue 21:  code: make GB/GR objects descended from a base class
