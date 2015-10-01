@@ -216,14 +216,14 @@ class GoogleBooks(object):
 
                         resultcount = resultcount + 1
 
-                        if startindex >= number_results:
-                            logger.debug("Found %s total results" % total_count)
-                            logger.debug("Removed %s bad language results" % ignored)
-                            logger.debug("Removed %s books with no author" % no_author_count)
-                            logger.info("Showing %s results for (%s) with keyword: %s" % (resultcount, api_value, authorname))
-                            break
-                        else:
-                            continue
+                    if startindex >= number_results:
+                        logger.debug("Found %s total results" % total_count)
+                        logger.debug("Removed %s bad language results" % ignored)
+                        logger.debug("Removed %s books with no author" % no_author_count)
+                        logger.info("Showing %s results for (%s) with keyword: %s" % (resultcount, api_value, authorname))
+                        break
+                    else:
+                        continue
 
             except KeyError:
                 break
@@ -399,18 +399,18 @@ class GoogleBooks(object):
                             }
                             resultcount = resultcount + 1
 
-        myDB.upsert("books", newValueDict, controlValueDict)
-        logger.debug(u"book found " + bookname + " " + bookdate)
-        if not find_book_status:
-            logger.info("[%s] Added book: %s" % (authorname, bookname))
-            added_count = added_count + 1
-        else:
-            updated_count = updated_count + 1
-            logger.info("[%s] Updated book: %s" % (authorname, bookname))
-    else:
-        book_ignore_count = book_ignore_count + 1
-else:
-    removedResults = removedResults + 1
+                            myDB.upsert("books", newValueDict, controlValueDict)
+                            logger.debug(u"book found " + bookname + " " + bookdate)
+                            if not find_book_status:
+                                logger.info("[%s] Added book: %s" % (authorname, bookname))
+                                added_count = added_count + 1
+                            else:
+                                updated_count = updated_count + 1
+                                logger.info("[%s] Updated book: %s" % (authorname, bookname))
+                        else:
+                            book_ignore_count = book_ignore_count + 1
+                    else:
+                        removedResults = removedResults + 1
 
                     if startindex >= number_results:
                         break
