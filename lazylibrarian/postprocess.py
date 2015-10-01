@@ -15,8 +15,8 @@ def processDir():
 	
     logger.debug(' Checking [%s] for files to post process' % processpath)
 	
-    #TODO - try exception on os.listdir - it throws debug level
-    #exception if dir doesn't exist - bloody hard to catch
+    # TODO - try exception on os.listdir - it throws debug level
+    # exception if dir doesn't exist - bloody hard to catch
     try:
         downloads = os.listdir(processpath)
     except OSError:
@@ -75,9 +75,9 @@ def processDir():
                 continue
 
             try:
-                os.chmod(os.path.join(lazylibrarian.DESTINATION_DIR, dest_path).encode(lazylibrarian.SYS_ENCODING), 0777);
+                os.chmod(os.path.join(lazylibrarian.DESTINATION_DIR, dest_path).encode(lazylibrarian.SYS_ENCODING), 0777)
             except Exception, e:
-                logger.debug("Could not chmod post-process directory");
+                logger.debug("Could not chmod post-process directory")
 
             dic = {'<':'', '>':'', '...':'', ' & ':' ', ' = ': ' ', '?':'', '$':'s', ' + ':' ', '"':'', ',':'', '*':'', ':':'', ';':'', '\'':''}
             dest_path = formatter.latinToAscii(formatter.replace_all(dest_path, dic))
@@ -90,7 +90,7 @@ def processDir():
                 ppcount = ppcount + 1
 
                 # If you use auto add by Calibre you need the book in a single directory, not nested
-                #So take the file you Copied/Moved to Dest_path and copy it to a Calibre auto add folder.
+                # So take the file you Copied/Moved to Dest_path and copy it to a Calibre auto add folder.
                 if lazylibrarian.IMP_AUTOADD:
                     processAutoAdd(dest_path)
 
@@ -135,8 +135,8 @@ def processDir():
 
         for directory in downloads:
             if "LL.(" in directory:
-                bookID = str(directory).split("LL.(")[1].split(")")[0];
-                logger.debug("Book with id: " + str(bookID) + " is in downloads");
+                bookID = str(directory).split("LL.(")[1].split(")")[0]
+                logger.debug("Book with id: " + str(bookID) + " is in downloads")
                 pp_path = os.path.join(processpath, directory)
 
                 if os.path.isfile(pp_path):
@@ -161,9 +161,9 @@ def processDir():
                         bookpub = metadata['BookPub']
 
                         try:
-                            os.chmod(os.path.join(lazylibrarian.DESTINATION_DIR, authorname).encode(lazylibrarian.SYS_ENCODING), 0777);
+                            os.chmod(os.path.join(lazylibrarian.DESTINATION_DIR, authorname).encode(lazylibrarian.SYS_ENCODING), 0777)
                         except Exception, e:
-                            logger.debug("Could not chmod author directory");
+                            logger.debug("Could not chmod author directory")
                         dest_path = lazylibrarian.EBOOK_DEST_FOLDER.replace('$Author', authorname).replace('$Title', bookname)
                         global_name = lazylibrarian.EBOOK_DEST_FILE.replace('$Author', authorname).replace('$Title', bookname)
                         dic = {'<':'', '>':'', '...':'', ' & ':' ', ' = ': ' ', '?':'', '$':'s', ' + ':' ', '"':'', ',':'', '*':'', ':':'', ';':'', '\'':''}
@@ -232,7 +232,7 @@ def processDestination(pp_path=None, dest_path=None, authorname=None, bookname=N
         elif lazylibrarian.DOWNLOAD_DIR == pp_path:
             for file3 in os.listdir(pp_path):
                 if ((str(file3).split('.')[-1]) in lazylibrarian.EBOOK_TYPE):
-                    bookID = str(file3).split("LL.(")[1].split(")")[0];
+                    bookID = str(file3).split("LL.(")[1].split(")")[0]
                     if bookID == book_id:
                         logger.info('Proccessing %s' % bookID)
                         if not os.path.exists(dest_path):
@@ -261,9 +261,9 @@ def processDestination(pp_path=None, dest_path=None, authorname=None, bookname=N
                     os.rename(os.path.join(dest_path, file2), os.path.join(dest_path, global_name + '.' + str(file2).split('.')[-1]))
 
         try:
-            os.chmod(dest_path, 0777);
+            os.chmod(dest_path, 0777)
         except Exception, e:
-            logger.debug("Could not chmod path: " + str(dest_path));
+            logger.debug("Could not chmod path: " + str(dest_path))
     except OSError, e:
         logger.info('Could not create destination folder or rename the downloaded ebook. Check permissions of: ' + lazylibrarian.DESTINATION_DIR)
         logger.info(str(e))
@@ -319,9 +319,9 @@ def processIMG(dest_path=None, bookimg=None, global_name=None):
             img.write(imggoogle.open(bookimg).read())
             img.close()
             try:
-                os.chmod(coverpath, 0777);
+                os.chmod(coverpath, 0777)
             except Exception, e:
-                logger.info("Could not chmod path: " + str(coverpath));
+                logger.info("Could not chmod path: " + str(coverpath))
 
     except (IOError, EOFError), e:
         logger.error('Error fetching cover from url: %s, %s' % (bookimg, e))
@@ -366,11 +366,11 @@ def processOPF(dest_path=None, authorname=None, bookname=None, bookisbn=None, bo
         opf.close()
 
         try:
-            os.chmod(opfpath, 0777);
+            os.chmod(opfpath, 0777)
         except Exception, e:
-            logger.info("Could not chmod path: " + str(opfpath));
+            logger.info("Could not chmod path: " + str(opfpath))
 
-       logger.debug('Saved metadata to: ' + opfpath)
+    logger.debug('Saved metadata to: ' + opfpath)
     else:
         logger.debug('%s allready exists. Did not create one.' % opfpath)
 
