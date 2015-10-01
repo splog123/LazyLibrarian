@@ -172,7 +172,6 @@ def processDir():
 
                         processBook = processDestination(pp_path, dest_path, authorname, bookname, global_name, bookID)
 
-
                         if processBook:
 
                             ppcount = ppcount + 1
@@ -277,7 +276,6 @@ def processAutoAdd(src_path=None):
     autoadddir = lazylibrarian.IMP_AUTOADD
     logger.debug('AutoAdd - Attempt to copy from [%s] to [%s]' % (src_path, autoadddir))
 	
-	
     if not os.path.exists(autoadddir):
         logger.info('AutoAdd directory [%s] is missing or not set - cannot perform autoadd copy' % autoadddir)
         return False
@@ -351,9 +349,9 @@ def processOPF(dest_path=None, authorname=None, bookname=None, bookisbn=None, bo
         opfinfo += '        <dc:description>%s</dc:description>\n' % bookdesc
 
     opfinfo += '        <guide>\n\
-			<reference href="cover.jpg" type="cover" title="Cover"/>\n\
-		</guide>\n\
-	</metadata>\n\
+		    <reference href="cover.jpg" type="cover" title="Cover"/>\n\
+            </guide>\n\
+    </metadata>\n\
 </package>'
 
     dic = {'...':'', ' & ':' ', ' = ': ' ', '$':'s', ' + ':' ', ',':'', '*':''}
