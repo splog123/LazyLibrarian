@@ -72,11 +72,11 @@ class PushbulletNotifier(object):
             testMessage = False
             try:
                 data = {
-        'title': event.encode('utf-8'),
-        'body': message.encode('utf-8'),
-        'device_iden': pushbullet_deviceid,
-        'type': notificationType}
-    http_handler.request(method, uri, body=urlencode(data),
+                    'title': event.encode('utf-8'),
+                    'body': message.encode('utf-8'),
+                    'device_iden': pushbullet_deviceid,
+                    'type': notificationType}
+                http_handler.request(method, uri, body=urlencode(data),
                          headers = {'Authorization': 'Basic %s' % authString})
                 pass
             except (SSLError, HTTPException):

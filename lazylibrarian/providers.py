@@ -254,9 +254,9 @@ def IterateOverNewzNabSites(book=None, searchType=None):
     if (lazylibrarian.USENETCRAWLER):
         logger.debug('[IterateOverNewzNabSites] - USenetCrawler')
         resultslist += NewzNabPlus(book, lazylibrarian.USENETCRAWLER_HOST,
-    lazylibrarian.USENETCRAWLER_API,
-    searchType)
-return resultslist
+                                    lazylibrarian.USENETCRAWLER_API,
+                                    searchType)
+    return resultslist
 
 
 def IterateOverTorrentSites(book=None, searchType=None):

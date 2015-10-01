@@ -72,8 +72,6 @@ def searchmagazines(mags=None):
             logger.info('Searching NZB\'s at provider UsenetCrawler ...')
             resultlist += providers.UsenetCrawler(book, 'mag')
 
-            #AHHH pass the book not the search book - bloody names the same, so wrong keys passing over
-
         if not resultlist:
             logger.debug("Adding book %s to queue." % book['searchterm'])
 
