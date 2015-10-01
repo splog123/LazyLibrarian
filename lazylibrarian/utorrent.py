@@ -30,6 +30,7 @@ from lazylibrarian.common import USER_AGENT
 class utorrentclient(object):
     TOKEN_REGEX = "<div id='token' style='display:none;'>([^<>]+)</div>"
 
+
     def __init__(self, base_url='', # lazylibrarian.UTORRENT_HOST, 
                  username = '', #lazylibrarian.UTORRENT_USER,
                  password = '',): #lazylibrarian.UTORRENT_PASS):
@@ -51,6 +52,7 @@ class utorrentclient(object):
         self.token = self._get_token()
         #TODO refresh token, when necessary
 
+
     def _make_opener(self, realm, base_url, username, password):
         """uTorrent API need HTTP Basic Auth and cookie support for token verify."""
         auth = urllib2.HTTPBasicAuthHandler()
@@ -65,6 +67,7 @@ class utorrentclient(object):
         opener = urllib2.build_opener(*handlers)
         return opener
 
+
     def _get_token(self):
         url = urlparse.urljoin(self.base_url, 'gui/token.html')
         try:
@@ -75,15 +78,18 @@ class utorrentclient(object):
         match = re.search(utorrentclient.TOKEN_REGEX, response.read())
         return match.group(1)
 
+
     def list(self, ** kwargs):
         params = [('list', '1')]
         params += kwargs.items()
         return self._action(params)
 
+
     def add_url(self, url):
         #can recieve magnet or normal .torrent link
         params = [('action', 'add-url'), ('s', url)]
         return self._action(params)
+
 
     def start(self, * hashes):
         params = [('action', 'start'),]
@@ -91,11 +97,13 @@ class utorrentclient(object):
             params.append(('hash', hash))
         return self._action(params)
 
+
     def stop(self, * hashes):
         params = [('action', 'stop'),]
         for hash in hashes:
             params.append(('hash', hash))
         return self._action(params)
+
 
     def pause(self, * hashes):
         params = [('action', 'pause'),]
@@ -103,23 +111,28 @@ class utorrentclient(object):
             params.append(('hash', hash))
         return self._action(params)
 
+
     def forcestart(self, * hashes):
         params = [('action', 'forcestart'),]
         for hash in hashes:
             params.append(('hash', hash))
         return self._action(params)
 
+
     def getfiles(self, hash):
         params = [('action', 'getfiles'), ('hash', hash)]
         return self._action(params)
+
 
     def getprops(self, hash):
         params = [('action', 'getprops'), ('hash', hash)]
         return self._action(params)
 
+
     def setprops(self, hash, s, v):
         params = [('action', 'setprops'), ('hash', hash), ("s", s), ("v", v)]
         return self._action(params)
+
 
     def setprio(self, hash, priority, * files):
         params = [('action', 'setprio'), ('hash', hash), ('p', str(priority))]
@@ -128,12 +141,13 @@ class utorrentclient(object):
 
         return self._action(params)
 
+
     def _action(self, params, body=None, content_type=None):
         url = self.base_url + '/gui/' + '?token=' + self.token + '&' + urllib.urlencode(params)
         request = urllib2.Request(url)
 	if lazylibrarian.PROXY_HOST:
-    request.set_proxy(lazylibrarian.PROXY_HOST, lazylibrarian.PROXY_TYPE)
-request.add_header('User-Agent', USER_AGENT)
+            request.set_proxy(lazylibrarian.PROXY_HOST, lazylibrarian.PROXY_TYPE)
+        request.add_header('User-Agent', USER_AGENT)
 
         if body:
             request.add_data(body)

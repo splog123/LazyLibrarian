@@ -30,32 +30,36 @@ except:
 import lib.oauth2 as oauth
 import lib.pythontwitter as twitter
 
-class TwitterNotifier:
+class TwitterNotifier(object):
 
     consumer_key = "208JPTMMnZjtKWA4obcH8g"
     consumer_secret = "BKaHzaQRd5PK6EH8EqPZ1w8mz6NSk9KErArarinHutk"
     
     REQUEST_TOKEN_URL = 'https://api.twitter.com/oauth/request_token'
-    ACCESS_TOKEN_URL  = 'https://api.twitter.com/oauth/access_token'
+    ACCESS_TOKEN_URL = 'https://api.twitter.com/oauth/access_token'
     AUTHORIZATION_URL = 'https://api.twitter.com/oauth/authorize'
-    SIGNIN_URL        = 'https://api.twitter.com/oauth/authenticate'
-    
+    SIGNIN_URL = 'https://api.twitter.com/oauth/authenticate'
+
+
     def notify_snatch(self, title):
         if lazylibrarian.TWITTER_NOTIFY_ONSNATCH:
             self._notifyTwitter(common.notifyStrings[common.NOTIFY_SNATCH] + ': ' + title)
+
 
     def notify_download(self, title):
         if lazylibrarian.TWITTER_NOTIFY_ONDOWNLOAD:
             self._notifyTwitter(common.notifyStrings[common.NOTIFY_DOWNLOAD] + ': ' + title)
 
+
     def test_notify(self):
         return self._notifyTwitter("This is a test notification from LazyLibrarian / " + formatter.now(), force=True)
+
 
     def _get_authorization(self):
     
         signature_method_hmac_sha1 = oauth.SignatureMethod_HMAC_SHA1() #@UnusedVariable
-        oauth_consumer             = oauth.Consumer(key=self.consumer_key, secret=self.consumer_secret)
-        oauth_client               = oauth.Client(oauth_consumer)
+        oauth_consumer = oauth.Consumer(key=self.consumer_key, secret=self.consumer_secret)
+        oauth_client = oauth.Client(oauth_consumer)
     
         logger.info('Requesting temp token from Twitter')
     
@@ -70,7 +74,8 @@ class TwitterNotifier:
             lazylibrarian.TWITTER_PASSWORD = request_token['oauth_token_secret']
     
             return self.AUTHORIZATION_URL + "?oauth_token=" + request_token['oauth_token']
-    
+
+
     def _get_credentials(self, key):
         request_token = {}
     
@@ -124,7 +129,8 @@ class TwitterNotifier:
             return False
     
         return True
-    
+
+
     def _notifyTwitter(self, message='', force=False):
         prefix = lazylibrarian.TWITTER_PREFIX
     
@@ -132,5 +138,6 @@ class TwitterNotifier:
             return False
     
         return self._send_tweet(prefix+": "+message)
+
 
 notifier = TwitterNotifier

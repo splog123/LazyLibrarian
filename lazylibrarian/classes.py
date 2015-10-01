@@ -17,7 +17,6 @@
 ## Stolen from Sick-Beard's classes.py ##
 #########################################
 
-
 from common import USER_AGENT
 import urllib
 
@@ -35,6 +34,7 @@ class AuthURLOpener(LazyLibrarianURLopener):
     pw: password to use for HTTP auth
     """
 
+
     def __init__(self, user, pw):
         self.username = user
         self.password = pw
@@ -44,6 +44,7 @@ class AuthURLOpener(LazyLibrarianURLopener):
 
         # call the base class
         urllib.FancyURLopener.__init__(self)
+
 
     def prompt_user_passwd(self, host, realm):
         """
@@ -60,31 +61,26 @@ class AuthURLOpener(LazyLibrarianURLopener):
         else:
             return ('', '')
 
+
     # this is pretty much just a hack for convenience
     def openit(self, url):
         self.numTries = 0
         return LazyLibrarianURLopener.open(self, url)
 
 
-class SearchResult:
+class SearchResult(object):
     """
     Represents a search result from an indexer.
     """
 
+
     def __init__(self):
         self.provider = -1
-
-        # URL to the NZB/torrent file
         self.url = ""
-
-        # used by some providers to store extra info associated with the result
         self.extraInfo = []
-
-        # quality of the release
         self.quality = -1
-
-        # release name
         self.name = ""
+
 
     def __str__(self):
 
@@ -120,6 +116,8 @@ class TorrentSearchResult(SearchResult):
 
 
 class Proper:
+
+    
     def __init__(self, name, url, date):
         self.name = name
         self.url = url
@@ -130,6 +128,7 @@ class Proper:
         self.tvdbid = -1
         self.season = -1
         self.episode = -1
+
 
     def __str__(self):
         return str(self.date) + " " + self.name + " " + str(self.season) + "x" + str(self.episode) + " of " + str(self.tvdbid)

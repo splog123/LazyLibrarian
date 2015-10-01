@@ -19,13 +19,16 @@ from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 from xml.etree.ElementTree import SubElement
 
+
 class GoodReads:
     # http://www.goodreads.com/api/
+
 
     def __init__(self, name=None):
         self.name = name.encode('utf-8')
         #self.type = type
         self.params = {"key":  lazylibrarian.GR_API}
+
 
     def find_results(self, authorname=None, queue=None):
         threading.currentThread().name = "GR-SEARCH"
@@ -143,6 +146,7 @@ class GoodReads:
 
         queue.put(resultlist)
 
+
     def find_author_id(self):
 
         URL = 'http://www.goodreads.com/api/author_url/' + urllib.quote(self.name) + '?' + urllib.urlencode(self.params)
@@ -178,6 +182,7 @@ class GoodReads:
 
         return authorlist
 
+
     def get_author_info(self, authorid=None, authorname=None, refresh=False):
 
         URL = 'http://www.goodreads.com/author/show/' + authorid + '.xml?' + urllib.urlencode(self.params)
@@ -204,15 +209,17 @@ class GoodReads:
         else:
             logger.info("[%s] Processing info for authorID: %s" % (authorname, authorid))
 
-    author_dict = {
-        'authorid':   resultxml[0].text,
-        'authorlink':   resultxml.find('link').text,
-        'authorimg':  resultxml.find('image_url').text,
-        'authorborn':   resultxml.find('born_at').text,
-        'authordeath':  resultxml.find('died_at').text,
-        'totalbooks':   resultxml.find('works_count').text
-        }
-return author_dict
+            author_dict = {
+                'authorid':   resultxml[0].text,
+                'authorlink':   resultxml.find('link').text,
+                'authorimg':  resultxml.find('image_url').text,
+                'authorborn':   resultxml.find('born_at').text,
+                'authordeath':  resultxml.find('died_at').text,
+                'totalbooks':   resultxml.find('works_count').text
+                }
+    
+        return author_dict
+
 
     def get_author_books(self, authorid=None, authorname=None, refresh=False):
 
@@ -306,10 +313,10 @@ return author_dict
 
                             bookLanguage = BOOK_rootxml.find('./book/language_code').text
 
-    logger.debug(u"language: " + str(bookLanguage))
-else:
-    logger.debug("No ISBN provided, skipping")
-    continue
+                            logger.debug(u"language: " + str(bookLanguage))
+                        else:
+                            logger.debug("No ISBN provided, skipping")
+                            continue
 
                     except Exception, e:
                         logger.debug(u"An error has occured: " + str(e))
@@ -377,18 +384,18 @@ else:
 
                             resultsCount = resultsCount + 1
 
-        myDB.upsert("books", newValueDict, controlValueDict)
-        logger.debug(u"book found " + book.find('title').text + " " + pubyear)
-        if not find_book_status:
-            logger.info("[%s] Added book: %s" % (authorname, bookname))
-            added_count = added_count + 1
-        else:
-            logger.info("[%s] Updated book: %s" % (authorname, bookname))
-            updated_count = updated_count + 1
-    else:
-        book_ignore_count = book_ignore_count + 1
-else:
-    removedResults = removedResults + 1
+                            myDB.upsert("books", newValueDict, controlValueDict)
+                            logger.debug(u"book found " + book.find('title').text + " " + pubyear)
+                            if not find_book_status:
+                                logger.info("[%s] Added book: %s" % (authorname, bookname))
+                                added_count = added_count + 1
+                            else:
+                                logger.info("[%s] Updated book: %s" % (authorname, bookname))
+                                updated_count = updated_count + 1
+                        else:
+                            book_ignore_count = book_ignore_count + 1
+                    else:
+                        removedResults = removedResults + 1
 
                 loopCount = loopCount + 1
                 URL = 'http://www.goodreads.com/author/list/' + authorid + '.xml?' + urllib.urlencode(self.params) + '&page=' + str(loopCount)
@@ -410,7 +417,7 @@ else:
                 resultxml = rootxml.getiterator('book')
 
         logger.info('[%s] The GoodReads API was hit %s times to populate book list' % (authorname, str(api_hits)))
-		
+
         lastbook = myDB.action("SELECT BookName, BookLink, BookDate from books WHERE AuthorID='%s' AND Status != 'Ignored' order by BookDate DESC" % authorid).fetchone()
         if lastbook:
             lastbookname = lastbook['BookName']
@@ -420,7 +427,7 @@ else:
             lastbookname = None
             lastbooklink = None
             lastbookdate = None
-                        
+
         unignoredbooks = myDB.select("SELECT COUNT(BookName) as unignored FROM books WHERE AuthorID='%s' AND Status != 'Ignored'" % authorid)
         bookCount = myDB.select("SELECT COUNT(BookName) as counter FROM books WHERE AuthorID='%s'" % authorid)
 
@@ -437,7 +444,7 @@ else:
 
         #This is here because GoodReads sometimes has several entries with the same BookID!
         modified_count = added_count + updated_count
-					
+
         logger.debug("Found %s total books for author" % total_count)
         logger.debug("Removed %s bad language results for author" % ignored)
         logger.debug("Removed %s bad character results for author" % removedResults)
@@ -448,6 +455,7 @@ else:
         else:
             logger.info("[%s] Book processing complete: Added %s books to the database" % (authorname, str(added_count)))
         return books_dict
+
 
     def find_book(self, bookid=None, queue=None):
         threading.currentThread().name = "GR-ADD-BOOK"
@@ -527,6 +535,6 @@ else:
             "BookAdded":    formatter.today()
                 }
 
-		#print newValueDict
-		myDB.upsert("books", newValueDict, controlValueDict)
-		logger.info("%s added to the books database" % bookname)
+        #print newValueDict
+        myDB.upsert("books", newValueDict, controlValueDict)
+        logger.info("%s added to the books database" % bookname)

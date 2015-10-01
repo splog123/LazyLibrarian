@@ -8,10 +8,12 @@ def now():
     now = datetime.datetime.now()
     return now.strftime("%Y-%m-%d %H:%M:%S")
 
+
 def today():
     today = datetime.date.today()
     yyyymmdd = datetime.date.isoformat(today)
     return yyyymmdd
+
 
 def age(histdate):
     nowdate = datetime.date.today()
@@ -22,12 +24,14 @@ def age(histdate):
     age = date1 - date2
     return age.days
 
+
 def nzbdate2format(nzbdate):
     mmname = nzbdate.split()[2].zfill(2)
     day = nzbdate.split()[1]
     month = str(strptime(mmname, '%b').tm_mon).zfill(2)
     year = nzbdate.split()[3]
     return year + '-' + month + '-' + day
+
 
 def month2num(month):
     if month == "January":
@@ -68,6 +72,7 @@ def month2num(month):
         ret_value = "Invalid"
     return ret_value
 
+
 def datecompare(nzbdate, control_date):
     y1 = int(nzbdate.split('-')[0])
     m1 = int(nzbdate.split('-')[1])
@@ -80,17 +85,20 @@ def datecompare(nzbdate, control_date):
     age = date1 - date2
     return age.days
 
+
 def checked(variable):
     if variable:
         return 'Checked'
     else:
         return ''
 
+
 def is_valid_isbn(isbn):
     last = 10 if isbn[-1] in ["X", "x"] else int(isbn[-1])
     weighted = [int(num) * weight for num, weight in
         zip(isbn[:-1], reversed(range(2, 11)))]
     return (sum(weighted) + last) % 11 == 0
+
 
 def latinToAscii(unicrap):
     """
@@ -132,6 +140,7 @@ def latinToAscii(unicrap):
         else:
             r += str(i)
     return r
+
 
 def replace_all(text, dic):
     for i, j in dic.iteritems():

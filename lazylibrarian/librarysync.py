@@ -8,11 +8,13 @@ import os
 import re
 import shlex
 
+
 def getList(st):
     my_splitter = shlex.shlex(st, posix=True)
     my_splitter.whitespace += ','
     my_splitter.whitespace_split = True
     return list(my_splitter)
+
 
 def LibraryScan(dir=None):
     if not dir:
@@ -48,14 +50,14 @@ def LibraryScan(dir=None):
                 #dest_path = authorname+'/'+bookname
                 global_name = lazylibrarian.EBOOK_DEST_FILE.replace('$Author', bookAuthor).replace('$Title', bookName)
 
-    encoded_book_path = os.path.join(dir, dest_path, global_name + "." + book_type).encode(lazylibrarian.SYS_ENCODING)
-    if os.path.isfile(encoded_book_path):
-        book_exists = True	
-if not book_exists:
-    myDB.action('update books set Status=? where AuthorName=? and BookName=?', [status, bookAuthor, bookName])
-    logger.info('Book %s updated as not found on disk' % encoded_book_path.decode(lazylibrarian.SYS_ENCODING, 'replace'))
-    if bookAuthor not in new_authors:
-        new_authors.append(bookAuthor)
+                encoded_book_path = os.path.join(dir, dest_path, global_name + "." + book_type).encode(lazylibrarian.SYS_ENCODING)
+                if os.path.isfile(encoded_book_path):
+                    book_exists = True	
+            if not book_exists:
+                myDB.action('update books set Status=? where AuthorName=? and BookName=?', [status, bookAuthor, bookName])
+                logger.info('Book %s updated as not found on disk' % encoded_book_path.decode(lazylibrarian.SYS_ENCODING, 'replace'))
+                if bookAuthor not in new_authors:
+                    new_authors.append(bookAuthor)
 
     latest_subdirectory = []
     for r, d, f in os.walk(dir):

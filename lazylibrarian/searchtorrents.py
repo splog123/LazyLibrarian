@@ -31,6 +31,7 @@ from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 from xml.etree.ElementTree import SubElement
 
+
 def search_tor_book(books=None, mags=None):
     if not(lazylibrarian.USE_TOR):
         return
@@ -82,7 +83,6 @@ def search_tor_book(books=None, mags=None):
     
     if not lazylibrarian.KAT:
         logger.info('No download method is set, use SABnzbd or blackhole')
-
 
     counter = 0
     for book in searchlist: 
@@ -137,18 +137,18 @@ def search_tor_book(books=None, mags=None):
                     snatchedbooks = myDB.action('SELECT * from books WHERE BookID=? and Status="Snatched"', [bookid]).fetchone()
                     if not snatchedbooks:
                         snatch = DownloadMethod(bookid, tor_prov, tor_Title, tor_url)
-    notifiers.notify_snatch(tor_Title + ' at ' + formatter.now())
-break;
+                        notifiers.notify_snatch(tor_Title + ' at ' + formatter.now())
+                    break;
             if addedCounter == 0:
                 logger.info("No torrent's found for " + (book["authorName"] + ' ' + book['bookName']).strip() + ". Adding book to queue.")
         counter = counter + 1
 
-# if not books or books==False:
+    # if not books or books==False:
     #     snatched = searchmag.searchmagazines(mags)
     #     for items in snatched:
     #         snatch = DownloadMethod(items['bookid'], items['tor_prov'], items['tor_title'], items['tor_url'])
     #         notifiers.notify_snatch(items['tor_title']+' at '+formatter.now())
-        logger.info("Search for Wanted items complete")
+    logger.info("Search for Wanted items complete")
 
 
 def DownloadMethod(bookid=None, tor_prov=None, tor_title=None, tor_url=None):
@@ -156,11 +156,11 @@ def DownloadMethod(bookid=None, tor_prov=None, tor_title=None, tor_url=None):
     myDB = database.DBConnection()
     download = False
     if (lazylibrarian.USE_TOR) and (lazylibrarian.TOR_DOWNLOADER_DELUGE or  lazylibrarian.TOR_DOWNLOADER_UTORRENT
-    or lazylibrarian.TOR_DOWNLOADER_BLACKHOLE or lazylibrarian.TOR_DOWNLOADER_TRANSMISSION):
-request = urllib2.Request(tor_url)
+                                 or lazylibrarian.TOR_DOWNLOADER_BLACKHOLE or lazylibrarian.TOR_DOWNLOADER_TRANSMISSION):
+        request = urllib2.Request(tor_url)
 	if lazylibrarian.PROXY_HOST:
-    request.set_proxy(lazylibrarian.PROXY_HOST, lazylibrarian.PROXY_TYPE)
-request.add_header('Accept-encoding', 'gzip')
+            request.set_proxy(lazylibrarian.PROXY_HOST, lazylibrarian.PROXY_TYPE)
+        request.add_header('Accept-encoding', 'gzip')
 	request.add_header('User-Agent', common.USER_AGENT)
     
         if tor_prov == 'KAT':
@@ -197,10 +197,10 @@ request.add_header('Accept-encoding', 'gzip')
 
         if (lazylibrarian.TOR_DOWNLOADER_DELUGE):
             client = DelugeRPCClient(lazylibrarian.DELUGE_HOST,
-    int(lazylibrarian.DELUGE_PORT),
-    lazylibrarian.DELUGE_USER,
-    lazylibrarian.DELUGE_PASS)
-client.connect()
+                     int(lazylibrarian.DELUGE_PORT),
+                     lazylibrarian.DELUGE_USER,
+                     lazylibrarian.DELUGE_PASS)
+            client.connect()
             download = client.call('add_torrent_url', tor_url, {"name": tor_title})
             logger.info('Deluge return value: %s' % download)
 
@@ -236,8 +236,8 @@ def MakeSearchTermWebSafe(insearchterm=None):
 
     searchterm = formatter.latinToAscii(formatter.replace_all(insearchterm, dic))
 
-        searchterm = re.sub('[\.\-\/]', ' ', searchterm).encode('utf-8')
+    searchterm = re.sub('[\.\-\/]', ' ', searchterm).encode('utf-8')
         
-        logger.debug("Converting Search Term [%s] to Web Safe Search Term [%s]" % (insearchterm, searchterm))
-        
-        return searchterm
+    logger.debug("Converting Search Term [%s] to Web Safe Search Term [%s]" % (insearchterm, searchterm))
+      
+    return searchterm

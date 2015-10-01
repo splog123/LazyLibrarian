@@ -31,7 +31,8 @@ from urllib import urlencode
 import urllib2
 
 
-class PushbulletNotifier:
+class PushbulletNotifier(object):
+
 
     def _sendPushbullet(self, message=None, event=None, pushbullet_token=None, pushbullet_deviceid=None, 
                         notificationType = None, method = None, force = False):
@@ -71,12 +72,12 @@ class PushbulletNotifier:
             testMessage = False
             try:
                 data = {
-    'title': event.encode('utf-8'),
-    'body': message.encode('utf-8'),
-    'device_iden': pushbullet_deviceid,
-    'type': notificationType}
-http_handler.request(method, uri, body=urlencode(data),
-                                     headers = {'Authorization': 'Basic %s' % authString})
+        'title': event.encode('utf-8'),
+        'body': message.encode('utf-8'),
+        'device_iden': pushbullet_deviceid,
+        'type': notificationType}
+    http_handler.request(method, uri, body=urlencode(data),
+                         headers = {'Authorization': 'Basic %s' % authString})
                 pass
             except (SSLError, HTTPException):
                 return False
@@ -99,6 +100,7 @@ http_handler.request(method, uri, body=urlencode(data),
             logger.error("Pushbullet notification failed.")
             return False
 
+
     def _notify(self, message=None, event=None, pushbullet_token=None, pushbullet_deviceid=None, 
                 notificationType = None, method = None, force = False):
         """
@@ -119,22 +121,28 @@ http_handler.request(method, uri, body=urlencode(data),
         self._sendPushbullet(message, event, pushbullet_token, pushbullet_deviceid, notificationType, method)
         return True
 
-##############################################################################
-# Public functions
-##############################################################################
+
+    ##############################################################################
+    # Public functions
+    ##############################################################################
+
 
     def notify_snatch(self, title):
         if lazylibrarian.PUSHBULLET_NOTIFY_ONSNATCH:
             self._notify(message=title, event=notifyStrings[NOTIFY_SNATCH], notificationType='note', method='POST')
 
+
     def notify_download(self, title):
         if lazylibrarian.PUSHBULLET_NOTIFY_ONDOWNLOAD:
             self._notify(message=title, event=notifyStrings[NOTIFY_DOWNLOAD], notificationType='note', method='POST')
 
+
     def test_notify(self, token, title="Test"):
         return self._sendPushbullet("This is a test notification from LazyLibrarian", title, token)
 
+
     def update_library(self, showName=None):
         pass
+
 
 notifier = PushbulletNotifier

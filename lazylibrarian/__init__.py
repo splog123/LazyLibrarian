@@ -191,6 +191,7 @@ NMA_APIKEY = None
 NMA_PRIORITY = None
 NMA_ONSNATCH = None
 
+
 def CheckSection(sec):
     """ Check if INI section exists, if not create it """
     try:
@@ -199,6 +200,7 @@ def CheckSection(sec):
     except:
         CFG[sec] = {}
         return False
+
 
 #################################################################################
 ## Check_setting_int                                                            #
@@ -231,6 +233,7 @@ def check_setting_int(config, cfg_name, item_name, def_val):
     logger.debug(item_name + " -> " + str(my_val))
     return my_val
 
+
 #################################################################################
 ## Check_setting_float                                                          #
 #################################################################################
@@ -244,8 +247,9 @@ def check_setting_int(config, cfg_name, item_name, def_val):
 ##        except:
 ##            config[cfg_name] = {}
 ##            config[cfg_name][item_name] = my_val
-
+##
 ##    return my_val
+
 
 ################################################################################
 # Check_setting_str                                                            #
@@ -267,6 +271,7 @@ def check_setting_str(config, cfg_name, item_name, def_val, log=True):
         logger.debug(item_name + " -> ******")
 
     return my_val
+
 
 def initialize():
 
@@ -316,8 +321,8 @@ def initialize():
         # Start the logger, silence console logging if we need to
         CFGLOGLEVEL = check_setting_int(CFG, 'General', 'loglevel', 3)
         if CFGLOGLEVEL == 3:    #default value if none in config
-    LOGLEVEL = 2    #If not set in Config, then lets set to DEBUG
-else:
+            LOGLEVEL = 2    #If not set in Config, then lets set to DEBUG
+        else:
             LOGLEVEL = CFGLOGLEVEL  #Config setting picked up
         LOGSIZE = check_setting_int(CFG, 'General', 'logsize', 51200)
         LOGCOUNT = check_setting_int(CFG, 'General', 'logcount', 5)
@@ -492,6 +497,7 @@ else:
         __INITIALIZED__ = True
         return True
 
+
 def daemonize():
     """
     Fork off as a daemon
@@ -529,6 +535,7 @@ def daemonize():
         logger.debug(u"Writing PID " + pid + " to " + str(PIDFILE))
         file(PIDFILE, 'w').write("%s\n" % pid)
 
+
 def launch_browser(host, port, root):
     if host == '0.0.0.0':
         host = 'localhost'
@@ -537,6 +544,7 @@ def launch_browser(host, port, root):
         webbrowser.open('http://%s:%i%s' % (host, port, root))
     except Exception, e:
         logger.error('Could not launch browser: %s' % e)
+
 
 def config_write():
     new_config = ConfigObj()
@@ -716,6 +724,7 @@ def config_write():
 
     new_config.write()
 
+
 def dbcheck():
 
     conn = sqlite3.connect(DBFILE)
@@ -810,7 +819,6 @@ def dbcheck():
         except Exception, z:
             logger.info('Error: ' + str(z))
                     
-
     try:
         myDB = database.DBConnection()
         author = myDB.select('SELECT AuthorID FROM authors WHERE AuthorName IS NULL')
@@ -821,6 +829,7 @@ def dbcheck():
             myDB.action('DELETE from books WHERE AuthorID=?', [authorid])
     except Exception, z:
         logger.info('Error: ' + str(z))
+
 
 def start():
     global __INITIALIZED__, started
@@ -838,9 +847,10 @@ def start():
         SCHED.add_interval_job(versioncheck.checkForUpdates, hours=VERSIONCHECK_INTERVAL)
 
         SCHED.start()
-#        for job in SCHED.get_jobs():
-#            print job
+        # for job in SCHED.get_jobs():
+        # print job
     started = True
+
 
 def shutdown(restart=False, update=False):
 

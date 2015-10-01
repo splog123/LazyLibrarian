@@ -8,16 +8,20 @@ import time
 
 db_lock = threading.Lock()
 
+
 def dbFilename(filename="lazylibrarian.db"):
 
     return os.path.join(lazylibrarian.DATADIR, filename)
 
-class DBConnection:
+
+class DBConnection(object):
+
 
     def __init__(self, filename="lazylibrarian.db"):
         self.filename = filename
         self.connection = sqlite3.connect(dbFilename(filename), 20)
         self.connection.row_factory = sqlite3.Row
+
 
     def action(self, query, args=None):
         with db_lock:
@@ -55,6 +59,7 @@ class DBConnection:
 
             return sqlResult
 
+
     def select(self, query, args=None):
         sqlResults = self.action(query, args).fetchall()
 
@@ -62,6 +67,7 @@ class DBConnection:
             return []
 
         return sqlResults
+
 
     def upsert(self, tableName, valueDict, keyDict):
         changesBefore = self.connection.total_changes

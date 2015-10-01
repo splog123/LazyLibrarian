@@ -26,6 +26,7 @@ from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 from xml.etree.ElementTree import SubElement
 
+
 def search_nzb_book(books=None, mags=None):
     if not(lazylibrarian.USE_NZB):
         return
@@ -137,8 +138,8 @@ def search_nzb_book(books=None, mags=None):
                     snatchedbooks = myDB.action('SELECT * from books WHERE BookID=? and Status="Snatched"', [bookid]).fetchone()
                     if not snatchedbooks:
                         snatch = DownloadMethod(bookid, nzbprov, nzbTitle, nzburl)
-    notifiers.notify_snatch(nzbTitle + ' at ' + formatter.now())
-break;
+                        notifiers.notify_snatch(nzbTitle + ' at ' + formatter.now())
+                    break;
             if addedCounter == 0:
                 logger.info("No nzb's found for " + (book["authorName"] + ' ' + book['bookName']).strip() + ". Adding book to queue.")
         counter = counter + 1
@@ -147,8 +148,8 @@ break;
         snatched = searchmag.searchmagazines(mags)
         for items in snatched:
             snatch = DownloadMethod(items['bookid'], items['nzbprov'], items['nzbtitle'], items['nzburl'])
-    notifiers.notify_snatch(items['nzbtitle'] + ' at ' + formatter.now())
-logger.info("Search for Wanted items complete")
+            notifiers.notify_snatch(items['nzbtitle'] + ' at ' + formatter.now())
+    logger.info("Search for Wanted items complete")
 
 
 def DownloadMethod(bookid=None, nzbprov=None, nzbtitle=None, nzburl=None):
@@ -175,8 +176,6 @@ def DownloadMethod(bookid=None, nzbprov=None, nzbtitle=None, nzburl=None):
 	    	req.set_proxy(lazylibrarian.PROXY_HOST, lazylibrarian.PROXY_TYPE)
             req.add_header('User-Agent', USER_AGENT)
             nzbfile = urllib2.urlopen(req, timeout=90).read()
-   
-
         except urllib2.URLError, e:
             logger.warn('Error fetching nzb from url: ' + nzburl + ' %s' % e)
             nzbfile = False;
@@ -220,10 +219,8 @@ def MakeSearchTermWebSafe(insearchterm=None):
 
     searchterm = formatter.latinToAscii(formatter.replace_all(insearchterm, dic))
 
-        searchterm = re.sub('[\.\-\/]', ' ', searchterm).encode('utf-8')
+    searchterm = re.sub('[\.\-\/]', ' ', searchterm).encode('utf-8')
         
-        logger.debug("Converting Search Term [%s] to Web Safe Search Term [%s]" % (insearchterm, searchterm))
+    logger.debug("Converting Search Term [%s] to Web Safe Search Term [%s]" % (insearchterm, searchterm))
         
-        return searchterm
- 
-
+    return searchterm

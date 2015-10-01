@@ -7,7 +7,8 @@ from lazylibrarian.common import notifyStrings
 from lib.pynma import pynma
 
 
-class NMA_Notifier:
+class NMA_Notifier(object):
+
 
     def _sendNMA(self, nma_api=None, nma_priority=None, event=None, message=None, force=False):
 
@@ -44,22 +45,28 @@ class NMA_Notifier:
         else:
             return True
 
-##############################################################################
-# Public functions
-##############################################################################
+
+    ##############################################################################
+    # Public functions
+    ##############################################################################
+
 
     def notify_snatch(self, title):
         if lazylibrarian.NMA_ONSNATCH:
             self._sendNMA(nma_api=None, nma_priority=None, event=notifyStrings[NOTIFY_SNATCH], message=title)
 
+
     def notify_download(self, title):
         if lazylibrarian.NMA_ENABLED:
             self._sendNMA(nma_api=None, nma_priority=None, event=notifyStrings[NOTIFY_DOWNLOAD], message=title)
 
+
     def test_notify(self, nma_api, nma_priority):
         return self._sendNMA(nma_api, nma_priority, event="Test", message="Testing NMA settings from LazyLibrarian", force=True)
 
+
     def update_library(self, showName=None):
         pass
+
 
 notifier = NMA_Notifier

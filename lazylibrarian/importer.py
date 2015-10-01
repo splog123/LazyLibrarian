@@ -50,7 +50,7 @@ def addAuthorToDB(authorname=None, refresh=False):
     else:
         logger.error("Nothing found")
 
-# process books
+    # process books
     if lazylibrarian.BOOK_API == "GoogleBooks":
         book_api = GoogleBooks()
         book_api.get_author_books(authorid, authorname, refresh=refresh)

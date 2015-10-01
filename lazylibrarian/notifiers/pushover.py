@@ -32,7 +32,8 @@ from urllib import urlencode
 import urllib2
 
 
-class PushoverNotifier:
+class PushoverNotifier(object):
+
 
     def _sendPushover(self, message=None, event=None, pushover_apitoken=None, pushover_keys=None, 
                       notificationType = None, method = None, force = False):
@@ -101,6 +102,7 @@ class PushoverNotifier:
             logger.error("Pushover notification failed.")
             return False
 
+
     def _notify(self, message=None, event=None, pushover_apitoken=None, pushover_keys=None, 
                 notificationType = None, method = None, force = False):
         """
@@ -124,22 +126,28 @@ class PushoverNotifier:
         self._sendPushover(message, event, pushover_apitoken, pushover_keys, notificationType, method)
         return True
 
-##############################################################################
-# Public functions
-##############################################################################
+
+    ##############################################################################
+    # Public functions
+    ##############################################################################
+
 
     def notify_snatch(self, title):
         if lazylibrarian.PUSHOVER_ONSNATCH:
             self._notify(message=title, event=notifyStrings[NOTIFY_SNATCH], notificationType='note', method='POST')
 
+
     def notify_download(self, title):
         if lazylibrarian.PUSHOVER_ONDOWNLOAD:
             self._notify(message=title, event=notifyStrings[NOTIFY_DOWNLOAD], notificationType='note', method='POST')
 
+
     def test_notify(self, apitoken, title="Test"):
         return self._sendPushover("This is a test notification from LazyLibrarian", title, apitoken)
 
+
     def update_library(self, showName=None):
         pass
+
 
 notifier = PushoverNotifier

@@ -12,11 +12,13 @@ MAX_FILES = 5
 # Simple rotating log handler that uses RotatingFileHandler
 class RotatingLogger(object):
 
+
     def __init__(self, filename, max_size=MAX_SIZE, max_files=MAX_FILES):
 
         self.filename = filename
         self.max_size = max_size
         self.max_files = max_files
+
 
     def initLogger(self, loglevel=1, logsize=51200, logcount=5):
 
@@ -48,6 +50,7 @@ class RotatingLogger(object):
             consolehandler.setFormatter(consoleformatter)
             l.addHandler(consolehandler)
 
+
     def log(self, message, level):
 
         logger = logging.getLogger('lazylibrarian')
@@ -70,14 +73,18 @@ class RotatingLogger(object):
 
 lazylibrarian_log = RotatingLogger('lazylibrarian.log')
 
+
 def debug(message):
     lazylibrarian_log.log(message, level='DEBUG')
+
 
 def info(message):
     lazylibrarian_log.log(message, level='INFO')
 
+
 def warn(message):
     lazylibrarian_log.log(message, level='WARNING')
+
 
 def error(message):
     lazylibrarian_log.log(message, level='ERROR')

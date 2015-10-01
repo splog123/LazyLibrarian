@@ -56,8 +56,8 @@ def request_response(url, method="get", auto_raise=True,
         # Request URL and wait for response
         #with lock:
         logger.debug(
-    "Requesting URL via %s method: %s" % (method.upper(), url))
-response = request_method(url, ** kwargs)
+            "Requesting URL via %s method: %s" % (method.upper(), url))
+        response = request_method(url, ** kwargs)
 
         # If status code != OK, then raise exception, except if the status code
         # is white listed.
@@ -67,33 +67,34 @@ response = request_method(url, ** kwargs)
                     response.raise_for_status()
                 except:
                     logger.debug(
-    "Response status code %d is not white "
-    "listed, raised exception" % response.status_code)
-raise
+                        "Response status code %d is not white "
+                        "listed, raised exception" % response.status_code)
+                    raise
         elif auto_raise:
             response.raise_for_status()
 
         return response
+
     except requests.exceptions.SSLError as e:
         if kwargs["verify"]:
             logger.error(
-    "Unable to connect to remote host because of a SSL error. "
-    "It is likely that your system cannot verify the validity"
-    "of the certificate. The remote certificate is either "
-    "self-signed, or the remote server uses SNI. See the wiki for "
-    "more information on this topic.")
-else:
-            logger.error(
-    "SSL error raised during connection, with certificate "
-    "verification turned off: %s", e)
-except requests.ConnectionError:
+                "Unable to connect to remote host because of a SSL error. "
+                "It is likely that your system cannot verify the validity"
+                "of the certificate. The remote certificate is either "
+                "self-signed, or the remote server uses SNI. See the wiki for "
+                "more information on this topic.")
+        else:
+                    logger.error(
+            "SSL error raised during connection, with certificate "
+            "verification turned off: %s", e)
+    except requests.ConnectionError:
         logger.error(
-    "Unable to connect to remote host. Check if the remote "
-    "host is up and running.")
-except requests.Timeout:
+            "Unable to connect to remote host. Check if the remote "
+            "host is up and running.")
+    except requests.Timeout:
         logger.error(
-    "Request timed out. The remote host did not respond timely.")
-except requests.HTTPError as e:
+            "Request timed out. The remote host did not respond timely.")
+    except requests.HTTPError as e:
         if e.response is not None:
             if e.response.status_code >= 500:
                 cause = "remote server error"

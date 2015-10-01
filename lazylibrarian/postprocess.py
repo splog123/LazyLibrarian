@@ -6,6 +6,7 @@ import lazylibrarian
 
 from lazylibrarian import database, logger, formatter, notifiers
 
+
 def processDir():
     # rename this thread
     threading.currentThread().name = "POSTPROCESS"
@@ -51,27 +52,27 @@ def processDir():
                         booklang = metadata['BookLang']
                         bookpub = metadata['BookPub']
 
-        #Default destination path, should be allowed change per config file.
-        dest_path = lazylibrarian.EBOOK_DEST_FOLDER.replace('$Author', authorname).replace('$Title', bookname)
-        #dest_path = authorname+'/'+bookname
-        global_name = lazylibrarian.EBOOK_DEST_FILE.replace('$Author', authorname).replace('$Title', bookname)
-        #global_name = bookname + ' - ' + authorname
-    else:
-        data = myDB.select("SELECT * from magazines WHERE Title='%s'" % book['BookID'])
-        for metadata in data:
-            title = metadata['Title']
-        #AuxInfo was added for magazine release date, normally housed in 'magazines' but if multiple
-        #files are downloading, there will be an error in post-processing, trying to go to the 
-        #same directory.
-        dest_path = lazylibrarian.MAG_DEST_FOLDER.replace('$IssueDate', book['AuxInfo']).replace('$Title', title)
-        #dest_path = '_Magazines/'+title+'/'+book['AuxInfo']
-        authorname = None
-        bookname = None
-        global_name = lazylibrarian.MAG_DEST_FILE.replace('$IssueDate', book['AuxInfo']).replace('$Title', title)
-        #global_name = book['AuxInfo']+' - '+title
-else:
-    logger.info("Snatched NZB %s is not in download directory" % (book['NZBtitle']))
-    continue
+                    #Default destination path, should be allowed change per config file.
+                    dest_path = lazylibrarian.EBOOK_DEST_FOLDER.replace('$Author', authorname).replace('$Title', bookname)
+                    #dest_path = authorname+'/'+bookname
+                    global_name = lazylibrarian.EBOOK_DEST_FILE.replace('$Author', authorname).replace('$Title', bookname)
+                    #global_name = bookname + ' - ' + authorname
+                else:
+                    data = myDB.select("SELECT * from magazines WHERE Title='%s'" % book['BookID'])
+                    for metadata in data:
+                        title = metadata['Title']
+                    #AuxInfo was added for magazine release date, normally housed in 'magazines' but if multiple
+                    #files are downloading, there will be an error in post-processing, trying to go to the 
+                    #same directory.
+                    dest_path = lazylibrarian.MAG_DEST_FOLDER.replace('$IssueDate', book['AuxInfo']).replace('$Title', title)
+                    #dest_path = '_Magazines/'+title+'/'+book['AuxInfo']
+                    authorname = None
+                    bookname = None
+                    global_name = lazylibrarian.MAG_DEST_FILE.replace('$IssueDate', book['AuxInfo']).replace('$Title', title)
+                    #global_name = book['AuxInfo']+' - '+title
+            else:
+                logger.info("Snatched NZB %s is not in download directory" % (book['NZBtitle']))
+                continue
 
             try:
                 os.chmod(os.path.join(lazylibrarian.DESTINATION_DIR, dest_path).encode(lazylibrarian.SYS_ENCODING), 0777);
@@ -87,7 +88,7 @@ else:
             if processBook:
 
                 ppcount = ppcount + 1
-				
+
                 # If you use auto add by Calibre you need the book in a single directory, not nested
                 #So take the file you Copied/Moved to Dest_path and copy it to a Calibre auto add folder.
                 if lazylibrarian.IMP_AUTOADD:
@@ -127,10 +128,10 @@ else:
                     newValueDict = {"IssueStatus": "Open"}
                     myDB.upsert("magazines", newValueDict, controlValueDict)
 
-    logger.info('Successfully processed: %s' % (global_name))
-    notifiers.notify_download(global_name + ' at ' + formatter.now())
-else:
-    logger.error('Postprocessing for %s has failed. Warning - AutoAdd will be repeated' % global_name)
+                logger.info('Successfully processed: %s' % (global_name))
+                notifiers.notify_download(global_name + ' at ' + formatter.now())
+            else:
+                logger.error('Postprocessing for %s has failed. Warning - AutoAdd will be repeated' % global_name)
 
         for directory in downloads:
             if "LL.(" in directory:
@@ -214,6 +215,7 @@ else:
         else:
             logger.debug('No snatched books have been found')
 
+
 def processDestination(pp_path=None, dest_path=None, authorname=None, bookname=None, global_name=None, book_id=None):
 
     try:
@@ -259,15 +261,16 @@ def processDestination(pp_path=None, dest_path=None, authorname=None, bookname=N
                 else:
                     os.rename(os.path.join(dest_path, file2), os.path.join(dest_path, global_name + '.' + str(file2).split('.')[-1]))
 
-    try:
-        os.chmod(dest_path, 0777);
-    except Exception, e:
-        logger.debug("Could not chmod path: " + str(dest_path));
-except OSError, e:
-    logger.info('Could not create destination folder or rename the downloaded ebook. Check permissions of: ' + lazylibrarian.DESTINATION_DIR)
-    logger.info(str(e))
-    pp = False
-return pp
+        try:
+            os.chmod(dest_path, 0777);
+        except Exception, e:
+            logger.debug("Could not chmod path: " + str(dest_path));
+    except OSError, e:
+        logger.info('Could not create destination folder or rename the downloaded ebook. Check permissions of: ' + lazylibrarian.DESTINATION_DIR)
+        logger.info(str(e))
+        pp = False
+    return pp
+
 
 def processAutoAdd(src_path=None):
     #Called to copy the book files to an auto add directory for the likes of Calibre which can't do nested dirs
@@ -306,6 +309,7 @@ def processAutoAdd(src_path=None):
     logger.info('Auto Add completed for [%s]' % dstname)
     return True
 	
+        
 def processIMG(dest_path=None, bookimg=None, global_name=None):
     #handle pictures
     try:
@@ -323,6 +327,7 @@ def processIMG(dest_path=None, bookimg=None, global_name=None):
 
     except (IOError, EOFError), e:
         logger.error('Error fetching cover from url: %s, %s' % (bookimg, e))
+
 
 def processOPF(dest_path=None, authorname=None, bookname=None, bookisbn=None, bookid=None, bookpub=None, bookdate=None, bookdesc=None, booklang=None, global_name=None):
     opfinfo = '<?xml version="1.0"  encoding="UTF-8"?>\n\
@@ -367,11 +372,11 @@ def processOPF(dest_path=None, authorname=None, bookname=None, bookisbn=None, bo
         except Exception, e:
             logger.info("Could not chmod path: " + str(opfpath));
 
-    logger.debug('Saved metadata to: ' + opfpath)
-else:
-    logger.debug('%s allready exists. Did not create one.' % opfpath)
+       logger.debug('Saved metadata to: ' + opfpath)
+    else:
+        logger.debug('%s allready exists. Did not create one.' % opfpath)
+
 
 class imgGoogle(FancyURLopener):
     # Hack because Google wants a user agent for downloading images, which is stupid because it's so easy to circumvent.
     version = 'Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11'
-

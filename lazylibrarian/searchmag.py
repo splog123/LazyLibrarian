@@ -19,13 +19,13 @@ from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 from xml.etree.ElementTree import SubElement
 
+
 def searchmagazines(mags=None):
     maglist = []
     myDB = database.DBConnection()
     searchlist = []
 
     threading.currentThread().name = "SEARCHMAGS"
-
 
     if mags is None:
         searchmags = myDB.select('SELECT Title, Frequency, LastAcquired, IssueDate from magazines WHERE Status="Active"')
@@ -189,32 +189,32 @@ def searchmagazines(mags=None):
                         #print nzbtitle_formatted
                         #print newdatish
 
-            if control_date is None:
-                myDB.upsert("magazines", {"LastAcquired": nzbdate, "IssueDate": newdatish}, {"Title": bookid})
-                maglist.append({
-                               'bookid': bookid,
-                               'nzbprov': nzbprov,
-                               'nzbtitle': nzbtitle,
-                               'nzburl': nzburl
-                               })
-                new_date = new_date + 1
-            else:
-                comp_date = formatter.datecompare(newdatish, control_date)
-                if comp_date > 0:
-                    myDB.upsert("magazines", {"LastAcquired": nzbdate, "IssueDate": newdatish}, {"Title": bookid})
-                    maglist.append({
-                                   'bookid': bookid,
-                                   'nzbprov': nzbprov,
-                                   'nzbtitle': nzbtitle,
-                                   'nzburl': nzburl
-                                   })
-                    new_date = new_date + 1
-                else:
-                    logger.debug('This issue of %s is old; skipping.' % nzbtitle_formatted)
-                    old_date = old_date + 1
-        else:
-            logger.debug('NZB [%s] does not completely match search term [%s].' % (nzbtitle, bookid))
-                bad_regex = bad_regex + 1
+                        if control_date is None:
+                            myDB.upsert("magazines", {"LastAcquired": nzbdate, "IssueDate": newdatish}, {"Title": bookid})
+                            maglist.append({
+                                           'bookid': bookid,
+                                           'nzbprov': nzbprov,
+                                           'nzbtitle': nzbtitle,
+                                           'nzburl': nzburl
+                                           })
+                            new_date = new_date + 1
+                        else:
+                            comp_date = formatter.datecompare(newdatish, control_date)
+                            if comp_date > 0:
+                                myDB.upsert("magazines", {"LastAcquired": nzbdate, "IssueDate": newdatish}, {"Title": bookid})
+                                maglist.append({
+                                               'bookid': bookid,
+                                               'nzbprov': nzbprov,
+                                               'nzbtitle': nzbtitle,
+                                               'nzburl': nzburl
+                                               })
+                                new_date = new_date + 1
+                            else:
+                                logger.debug('This issue of %s is old; skipping.' % nzbtitle_formatted)
+                                old_date = old_date + 1
+                    else:
+                        logger.debug('NZB [%s] does not completely match search term [%s].' % (nzbtitle, bookid))
+                        bad_regex = bad_regex + 1
 
-			logger.info('Found %s NZBs for %s.  %s are new, %s are old, and %s have bad date formatting' % (total_nzbs, bookid, new_date, old_date, bad_regex) )
-	return maglist
+           logger.info('Found %s NZBs for %s.  %s are new, %s are old, and %s have bad date formatting' % (total_nzbs, bookid, new_date, old_date, bad_regex) )
+    return maglist

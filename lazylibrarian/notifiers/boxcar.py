@@ -32,7 +32,7 @@ import urllib2
 API_URL = 'https://new.boxcar.io/api/notifications'
 
 
-class BoxcarNotifier:
+class BoxcarNotifier(object):
 
     def _sendBoxcar(self, msg, title, token, subscribe=False):
         """
@@ -117,6 +117,7 @@ class BoxcarNotifier:
         logger.log(u"BOXCAR: Boxcar notification successful.", logger.DEBUG)
         return True
 
+
     def _notify(self, title, message, username=None, force=False):
         """
         Sends a boxcar notification based on the provided info or SB config
@@ -140,20 +141,24 @@ class BoxcarNotifier:
         self._sendBoxcar(message, title, username)
         return True
 
-##############################################################################
-# Public functions
-##############################################################################
+
+    ##############################################################################
+    # Public functions
+    ##############################################################################
 
     def notify_snatch(self, title):
         if lazylibrarian.BOXCAR_NOTIFY_ONSNATCH:
             self._notify(notifyStrings[NOTIFY_SNATCH], title)
 
+
     def notify_download(self, title):
         if lazylibrarian.BOXCAR_NOTIFY_ONDOWNLOAD:
             self._notify(notifyStrings[NOTIFY_DOWNLOAD], title)
 
+
     def test_notify(self, token, title="Test"):
         return self._sendBoxcar("This is a test notification from LazyLibrarian", title, token)
+
 
     def update_library(self, showName=None):
         pass

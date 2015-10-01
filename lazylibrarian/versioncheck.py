@@ -10,8 +10,8 @@ import tarfile
 import threading
 import urllib2
 
-#
-#Function to execute GIT commands taking care of error logging etc
+
+# Function to execute GIT commands taking care of error logging etc
 def runGit(args):
 
     git_locations = ['git']
@@ -46,8 +46,8 @@ def runGit(args):
             
     return (output, err)
             
-#
-#function to determine what type of install we are on & sets current Branch value
+
+# function to determine what type of install we are on & sets current Branch value
 # - windows
 # - git based
 # - deployed source code
@@ -68,9 +68,9 @@ def getInstallType():
             lazylibrarian.CURRENT_BRANCH = 'master'
             logger.debug('(getInstallType) [Source]install detected. Setting Branch to [%s]' % lazylibrarian.CURRENT_BRANCH)
 
-#
-#Establish the version of the installed app for Source or GIT only
-#Global variable set in LazyLibrarian.py on startup as it should be
+
+# Establish the version of the installed app for Source or GIT only
+# Global variable set in LazyLibrarian.py on startup as it should be
 def getCurrentVersion():
     version = ''
 
@@ -120,9 +120,9 @@ def getCurrentVersion():
     logger.debug('(getCurrentVersion) - Install type [%s] Local Version is set to [%s] ' % (lazylibrarian.INSTALL_TYPE, version))
     return version
 
-#
-#Returns current branch name of installed version from GIT
-#return "NON GIT INSTALL" if INSTALL TYPE is not GIT
+
+# Returns current branch name of installed version from GIT
+# return "NON GIT INSTALL" if INSTALL TYPE is not GIT
 def getCurrentGitBranch():
     #Can only work for GIT driven installs, so check install type
     if lazylibrarian.INSTALL_TYPE != 'git':
@@ -142,8 +142,9 @@ def getCurrentGitBranch():
 
     return current_branch
 
-#not sure how this is called as we have same function in webServe.py also
-#ensuring both are identical for now
+
+# not sure how this is called as we have same function in webServe.py also
+# ensuring both are identical for now
 def checkForUpdates():
     # rename this thread
     threading.currentThread().name = "VERSIONCHECK"
@@ -155,9 +156,10 @@ def checkForUpdates():
     logger.debug('(checkForUpdates) Done')
     #l = checkGithub()
 
-#Return latest version from GITHUB 
-#- if GIT install return latest on current branch
-#- if nonGIT install return latest from master
+
+# Return latest version from GITHUB 
+# - if GIT install return latest on current branch
+# - if nonGIT install return latest from master
 def getLatestVersion():
     #Can only work for GIT driven installs, so check install type
     latest_version = 'Unknown'
@@ -176,8 +178,8 @@ def getLatestVersion():
     return latest_version
     
 
-#Don't call directly, use getLatestVersion as wrapper.
-#Also removed reference to global variable setting.
+# Don't call directly, use getLatestVersion as wrapper.
+# Also removed reference to global variable setting.
 def getLatestVersionaFromGit():
     latest_version = 'Unknown'
     
@@ -206,6 +208,7 @@ def getLatestVersionaFromGit():
                 latest_version = 'Not_Available_From_GitHUB'
 
     return latest_version
+
 
 # See how many commits behind we are    
 def getCommitDifferenceFromGit():
@@ -250,8 +253,7 @@ def getCommitDifferenceFromGit():
     return commits
     
      
-#
-#writes a version.txt file in the LL root dir with value of parameter
+# writes a version.txt file in the LL root dir with value of parameter
 def updateVersionFile(new_version_id):
     # Update version.txt located in LL home dir.
     version_path = os.path.join(lazylibrarian.PROG_DIR, 'version.txt')
@@ -263,10 +265,10 @@ def updateVersionFile(new_version_id):
         ver_file.close()
     except IOError, e:
         logger.error(u"(updateVersionFile) Unable to write current version to version.txt, update not complete: " + ex(e))
+
         
 def update():
 
-     
     if lazylibrarian.INSTALL_TYPE == 'win':
         logger.debug('(update) Windows install - no update available')    
         logger.info('(update) Windows .exe updating not supported yet.')
