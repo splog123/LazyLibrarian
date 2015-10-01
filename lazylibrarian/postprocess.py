@@ -370,7 +370,7 @@ def processOPF(dest_path=None, authorname=None, bookname=None, bookisbn=None, bo
         except Exception, e:
             logger.info("Could not chmod path: " + str(opfpath))
 
-    logger.debug('Saved metadata to: ' + opfpath)
+        logger.debug('Saved metadata to: ' + opfpath)
     else:
         logger.debug('%s allready exists. Did not create one.' % opfpath)
 
