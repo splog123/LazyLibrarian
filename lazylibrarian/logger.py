@@ -1,9 +1,9 @@
-import os, threading, logging
-
-from logging import handlers
-
 import lazylibrarian
 from lazylibrarian import formatter
+import logging
+from logging import handlers
+import os
+import threading
 
 MAX_SIZE = 51200 # 5 Bytes
 MAX_FILES = 5

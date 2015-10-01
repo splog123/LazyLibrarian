@@ -16,8 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with LazyLibrarian.  If not, see <http://www.gnu.org/licenses/>.
 
-import os.path
 import operator
+import os.path
 import platform
 import re
 

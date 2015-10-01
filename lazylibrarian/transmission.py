@@ -13,13 +13,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with LazyLibrarian.  If not, see <http://www.gnu.org/licenses/>.
 
-from lazylibrarian import logger, request
-
-import time
-import json
 import base64
-import urlparse
+import json
 import lazylibrarian
+from lazylibrarian import logger
+from lazylibrarian import request
+import time
+import urlparse
 
 # This is just a simple script to send torrents to transmission. The
 # intention is to turn this into a class where we can check the state
@@ -34,9 +34,9 @@ def addTorrent(link):
     if link.endswith('.torrent'):
         with open(link, 'rb') as f:
             metainfo = str(base64.b64encode(f.read()))
-        arguments = {'metainfo': metainfo }
+        arguments = {'metainfo': metainfo}
     else:
-        arguments = {'filename': link }
+        arguments = {'filename': link}
 
     response = torrentAction(method, arguments)
 
@@ -149,7 +149,7 @@ def torrentAction(method, arguments):
     # Retrieve session id
     auth = (username, password) if username and password else None
     response = request.request_response(host, auth=auth,
-        whitelist_status_code=[401, 409])
+                                        whitelist_status_code = [401, 409])
 
     if response is None:
         logger.error("Error gettings Transmission session ID")
@@ -159,8 +159,8 @@ def torrentAction(method, arguments):
     if response.status_code == 401:
         if auth:
             logger.error("Username and/or password not accepted by " \
-                "Transmission")
-        else:
+    "Transmission")
+else:
             logger.error("Transmission authorization required")
 
         return
@@ -176,7 +176,7 @@ def torrentAction(method, arguments):
     data = {'method': method, 'arguments': arguments}
 
     response = request.request_json(host, method="POST", data=json.dumps(data),
-        headers=headers, auth=auth)
+                                    headers = headers, auth = auth)
 
     print response
 

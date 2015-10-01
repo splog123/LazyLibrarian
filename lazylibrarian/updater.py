@@ -1,6 +1,7 @@
 import lazylibrarian
-
-from lazylibrarian import logger, database, importer
+from lazylibrarian import database
+from lazylibrarian import importer
+from lazylibrarian import logger
 
 def dbUpdate(forcefull=False):
 

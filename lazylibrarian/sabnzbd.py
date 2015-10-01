@@ -1,9 +1,10 @@
-import os, urllib, urllib2
 import datetime
-
 import lazylibrarian
-
-from lazylibrarian import logger, database
+from lazylibrarian import database
+from lazylibrarian import logger
+import os
+import urllib
+import urllib2
 
 def SABnzbd(title=None, nzburl=None):
 

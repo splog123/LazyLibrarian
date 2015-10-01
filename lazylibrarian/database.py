@@ -1,13 +1,10 @@
 from __future__ import with_statement
-
+import lazylibrarian
+from lazylibrarian import logger
 import os
 import sqlite3
 import threading
 import time
-
-import lazylibrarian
-
-from lazylibrarian import logger
 
 db_lock = threading.Lock()
 
@@ -69,13 +66,13 @@ class DBConnection:
     def upsert(self, tableName, valueDict, keyDict):
         changesBefore = self.connection.total_changes
 
-        genParams = lambda myDict : [x + " = ?" for x in myDict.keys()]
+        genParams = lambda myDict: [x + " = ?" for x in myDict.keys()]
 
-        query = "UPDATE "+tableName+" SET " + ", ".join(genParams(valueDict)) + " WHERE " + " AND ".join(genParams(keyDict))
+        query = "UPDATE " + tableName + " SET " + ", ".join(genParams(valueDict)) + " WHERE " + " AND ".join(genParams(keyDict))
 
         self.action(query, valueDict.values() + keyDict.values())
 
         if self.connection.total_changes == changesBefore:
-            query = "INSERT INTO "+tableName+" (" + ", ".join(valueDict.keys() + keyDict.keys()) + ")" + \
-                        " VALUES (" + ", ".join(["?"] * len(valueDict.keys() + keyDict.keys())) + ")"
+            query = "INSERT INTO " + tableName + " (" + ", ".join(valueDict.keys() + keyDict.keys()) + ")" + \
+                " VALUES (" + ", ".join(["?"] * len(valueDict.keys() + keyDict.keys())) + ")"
             self.action(query, valueDict.values() + keyDict.values())

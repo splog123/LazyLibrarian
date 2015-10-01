@@ -1,20 +1,21 @@
-import os, sys, cherrypy
+import cherrypy
 import lazylibrarian
-
 from lazylibrarian.webServe import WebInterface
+import os
+import sys
 
 def initialize(options={}):
 
     cherrypy.config.update({
-        'log.screen':           False,
-        'server.thread_pool':   10,
-        'server.socket_port':   options['http_port'],
-        'server.socket_host':   options['http_host'],
-        'engine.autoreload_on': False,
-        'tools.encode.on': True,
-        'tools.encode.encoding': 'utf-8',
-        'tools.decode.on': True,
-        })
+                           'log.screen':           False,
+                           'server.thread_pool':   10,
+                           'server.socket_port':   options['http_port'],
+                           'server.socket_host':   options['http_host'],
+                           'engine.autoreload_on': False,
+                           'tools.encode.on': True,
+                           'tools.encode.encoding': 'utf-8',
+                           'tools.decode.on': True,
+                           })
 
     conf = {
         '/': {
@@ -44,16 +45,16 @@ def initialize(options={}):
 
     if options['http_pass'] != "":
         conf['/'].update({
-            'tools.auth_basic.on': True,
-            'tools.auth_basic.realm': 'LazyLibrarian',
-            'tools.auth_basic.checkpassword':  cherrypy.lib.auth_basic.checkpassword_dict(
-                {options['http_user']:options['http_pass']})
-        })
+                         'tools.auth_basic.on': True,
+                         'tools.auth_basic.realm': 'LazyLibrarian',
+                         'tools.auth_basic.checkpassword':  cherrypy.lib.auth_basic.checkpassword_dict(
+                                                                                                       {options['http_user']:options['http_pass']})
+                         })
 
 
     # Prevent time-outs
     cherrypy.engine.timeout_monitor.unsubscribe()
-    cherrypy.tree.mount(WebInterface(), options['http_root'], config = conf)
+    cherrypy.tree.mount(WebInterface(), options['http_root'], config=conf)
 
     cherrypy.engine.autoreload.subscribe()
 

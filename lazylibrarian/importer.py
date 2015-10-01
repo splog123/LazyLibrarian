@@ -1,9 +1,12 @@
-import time, os, threading
-
 import lazylibrarian
-from lazylibrarian import logger, formatter, database
-from lazylibrarian.gr import GoodReads
+from lazylibrarian import database
+from lazylibrarian import formatter
+from lazylibrarian import logger
 from lazylibrarian.gb import GoogleBooks
+from lazylibrarian.gr import GoodReads
+import os
+import threading
+import time
 
 
 def addAuthorToDB(authorname=None, refresh=False):
@@ -13,7 +16,7 @@ def addAuthorToDB(authorname=None, refresh=False):
 
     GR = GoodReads(authorname)
     
-    query = "SELECT * from authors WHERE AuthorName='%s'" % authorname.replace("'","''")
+    query = "SELECT * from authors WHERE AuthorName='%s'" % authorname.replace("'", "''")
     dbauthor = myDB.action(query).fetchone()
     controlValueDict = {"AuthorName": authorname}
 

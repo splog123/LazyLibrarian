@@ -1,19 +1,15 @@
-import time, threading, urllib, urllib2, re
-
-from xml.etree import ElementTree
-
 import lazylibrarian
-
-from lazylibrarian import logger, SimpleCache
+from lazylibrarian import SimpleCache
+from lazylibrarian import logger
 import lazylibrarian.common as common
-
-#new libraries to support torrents
-#import lib.feedparser as feedparser
 import lib.feedparser as feedparser
-#from bs4 import BeautifulSoup
-#import cookielib
-#import socket
+import re
+import threading
+import time
+import urllib
+import urllib2
 import urlparse
+from xml.etree import ElementTree
 
 
 def url_fix(s, charset='utf-8'):
@@ -33,12 +29,12 @@ def KAT(book=None):
 
 
     params = {
-                "category": "books",
-                "field": "seeders",
-                "sorder": "desc",
-                "rss": "1"
-              }
-    searchURL = providerurl + "/?%s" % urllib.urlencode(params)
+    "category": "books",
+    "field": "seeders",
+    "sorder": "desc",
+    "rss": "1"
+}
+searchURL = providerurl + "/?%s" % urllib.urlencode(params)
 
     try:
         data = urllib2.urlopen(searchURL, timeout=20)
@@ -72,12 +68,12 @@ def KAT(book=None):
                     
                     if minimumseeders < int(seeders):
                         results.append({
-                            'bookid': book['bookid'],
-                            'tor_prov': "KAT",
-                            'tor_title': title,
-                            'tor_url': url,
-                            'tor_size': str(size),
-                            })
+                                       'bookid': book['bookid'],
+                                       'tor_prov': "KAT",
+                                       'tor_title': title,
+                                       'tor_url': url,
+                                       'tor_size': str(size),
+                                       })
 
                     logger.info('Found %s. Size: %s' % (title, size))
                 
@@ -140,17 +136,17 @@ def OLDUsenetCrawler(book=None):
         nzbcount = 0
         for nzb in resultxml:
             try:
-                nzbcount = nzbcount+1
+                nzbcount = nzbcount + 1
                 results.append({
-                    'bookid': book['bookid'],
-                    'nzbprov': "UsenetCrawler",
-                    'nzbtitle': nzb[0].text,
-                    'nzburl': nzb[2].text,
-                    'nzbdate': nzb[4].text,
-                    'nzbsize': nzb[10].attrib.get('size')
-                    })
+                               'bookid': book['bookid'],
+                               'nzbprov': "UsenetCrawler",
+                               'nzbtitle': nzb[0].text,
+                               'nzburl': nzb[2].text,
+                               'nzbdate': nzb[4].text,
+                               'nzbsize': nzb[10].attrib.get('size')
+                               })
                     
-                logger.debug('NZB Details BookID: [%s] NZBUrl [%s] NZBDate [%s] NZBSize [%s]' % (book['bookid'],nzb[2].text,nzb[4].text,nzb[10].attrib.get('size')))
+                logger.debug('NZB Details BookID: [%s] NZBUrl [%s] NZBDate [%s] NZBSize [%s]' % (book['bookid'], nzb[2].text, nzb[4].text, nzb[10].attrib.get('size')))
               
             except IndexError:
                 logger.info('No results')
@@ -194,11 +190,11 @@ def NewzNab(book=None, newznabNumber=None):
 
     URL = HOST + '/api?' + urllib.urlencode(params)
 
-    try :
+    try:
         request = urllib2.Request(URL)
 	if lazylibrarian.PROXY_HOST:
-		request.set_proxy(lazylibrarian.PROXY_HOST, lazylibrarian.PROXY_TYPE)
-        request.add_header('User-Agent', common.USER_AGENT)
+    request.set_proxy(lazylibrarian.PROXY_HOST, lazylibrarian.PROXY_TYPE)
+request.add_header('User-Agent', common.USER_AGENT)
         opener = urllib2.build_opener(SimpleCache.CacheHandler(".ProviderCache"), SimpleCache.ThrottlingProcessor(5))
         resp = opener.open(request)
 
@@ -220,16 +216,16 @@ def NewzNab(book=None, newznabNumber=None):
         nzbcount = 0
         for nzb in resultxml:
             try:
-                nzbcount = nzbcount+1
+                nzbcount = nzbcount + 1
                 results.append({
-                    'bookid': book['bookid'],
-                    'nzbprov': "NewzNab",
-                    'nzbtitle': nzb[0].text,
-                    'nzburl': nzb[2].text,
-                    'nzbdate': nzb[4].text,
-                    'nzbsize': nzb[7].attrib.get('length')
-                    })
-            except IndexError:
+    'bookid': book['bookid'],
+    'nzbprov': "NewzNab",
+    'nzbtitle': nzb[0].text,
+    'nzburl': nzb[2].text,
+    'nzbdate': nzb[4].text,
+    'nzbsize': nzb[7].attrib.get('length')
+    })
+except IndexError:
                 logger.debug('No results')
         if nzbcount:
             logger.debug('Found %s nzb for: %s' % (nzbcount, book['searchterm']))
@@ -247,21 +243,21 @@ def IterateOverNewzNabSites(book=None, searchType=None):
     if (lazylibrarian.NEWZNAB):
         logger.debug('[IterateOverNewzNabSites] - NewzNab1')
         resultslist += NewzNabPlus(book, lazylibrarian.NEWZNAB_HOST, 
-                                    lazylibrarian.NEWZNAB_API,
-                                    searchType)
+                                   lazylibrarian.NEWZNAB_API,
+                                   searchType)
 
     if (lazylibrarian.NEWZNAB2):
         logger.debug('[IterateOverNewzNabSites] - NewzNab2')
         resultslist += NewzNabPlus(book, lazylibrarian.NEWZNAB_HOST2, 
-                                    lazylibrarian.NEWZNAB_API2,
-                                    searchType)
+                                   lazylibrarian.NEWZNAB_API2,
+                                   searchType)
                                     
     if (lazylibrarian.USENETCRAWLER):
         logger.debug('[IterateOverNewzNabSites] - USenetCrawler')
         resultslist += NewzNabPlus(book, lazylibrarian.USENETCRAWLER_HOST,
-                                    lazylibrarian.USENETCRAWLER_API,
-                                    searchType)
-    return resultslist
+    lazylibrarian.USENETCRAWLER_API,
+    searchType)
+return resultslist
 
 
 
@@ -269,8 +265,8 @@ def IterateOverTorrentSites(book=None, searchType=None):
 
     resultslist = []
     if (lazylibrarian.KAT):
-         logger.debug('[IterateOverTorrentSites] - KAT')
-         resultslist += KAT(book)
+        logger.debug('[IterateOverTorrentSites] - KAT')
+        resultslist += KAT(book)
 
     return resultslist
 
@@ -283,7 +279,7 @@ def NewzNabPlus(book=None, host=None, api_key=None, searchType=None):
 
 
     #logger.info('[NewzNabPlus] Searching term [%s] for author [%s] and title [%s] on host [%s] for a [%s] item' % (book['searchterm'], book['authorName'], book['bookName'], host, searchType))
-    logger.info('[NewzNabPlus] searchType [%s] with Host [%s] using api [%s] for item [%s]'%(searchType, host, api_key,str(book)))
+    logger.info('[NewzNabPlus] searchType [%s] with Host [%s] using api [%s] for item [%s]' % (searchType, host, api_key, str(book)))
     
     
     results = []  
@@ -295,11 +291,11 @@ def NewzNabPlus(book=None, host=None, api_key=None, searchType=None):
     
     URL = host + '/api?' + urllib.urlencode(params)
 
-    try :
+    try:
         request = urllib2.Request(URL)
 	if lazylibrarian.PROXY_HOST:
-		request.set_proxy(lazylibrarian.PROXY_HOST, lazylibrarian.PROXY_TYPE)
-        request.add_header('User-Agent', common.USER_AGENT)
+    request.set_proxy(lazylibrarian.PROXY_HOST, lazylibrarian.PROXY_TYPE)
+request.add_header('User-Agent', common.USER_AGENT)
         opener = urllib2.build_opener(SimpleCache.CacheHandler(".ProviderCache"), SimpleCache.ThrottlingProcessor(5))
         resp = opener.open(request)
 
@@ -321,7 +317,7 @@ def NewzNabPlus(book=None, host=None, api_key=None, searchType=None):
         nzbcount = 0
         for nzb in resultxml:
             try:
-                nzbcount = nzbcount+1
+                nzbcount = nzbcount + 1
                 
                 results.append(ReturnResultsFieldsBySearchType(book, nzb, searchType, host))
             except IndexError:
@@ -342,26 +338,26 @@ def ReturnSearchTypeStructure(api_key, book, searchType):
             "apikey": api_key,
             "title": common.removeDisallowedFilenameChars(book['bookName']),
             "author": common.removeDisallowedFilenameChars(book['authorName']),
-            "cat": 7020,                #7020=ebook
+            "cat": 7020, #7020=ebook
         }
     elif searchType == "mag":
         params = {
             "t": "search",
             "apikey": api_key,
-            "cat": "7000,7010,7020",    #7000=Other,7010=Misc,7020 Ebook
+            "cat": "7000,7010,7020", #7000=Other,7010=Misc,7020 Ebook
             "q": common.removeDisallowedFilenameChars(book['searchterm']),
             "extended": 1,
         }
     else:
-                params = {
-            "t": "search",
-            "apikey": api_key,
-            #"cat": 7020,
-            "q": book['searchterm'],
-            "extended": 1,
-        }        
+    params = {
+"t": "search",
+    "apikey": api_key,
+    #"cat": 7020,
+    "q": book['searchterm'],
+    "extended": 1,
+}        
         
-    logger.debug('NewzNabPlus] - Search parameters set to '+str(params))
+    logger.debug('NewzNabPlus] - Search parameters set to ' + str(params))
 
     return params
 
@@ -422,36 +418,36 @@ def ReturnResultsFieldsBySearchType(book=None, nzbdetails=None, searchType=None,
     #   <newznab:attr name="group" value="alt.binaries.e-book.flood"/>
     #</item>    
     
-    resultFields=None
+    resultFields = None
 
     
     if searchType == "book":
-        resultFields= {
-                    'bookid': book['bookid'],
-                    'nzbprov': host,
-                    'nzbtitle': nzbdetails[0].text,
-                    'nzburl': nzbdetails[2].text,
-                    'nzbdate': nzbdetails[4].text,
-                    'nzbsize': nzbdetails[10].attrib.get('size')
-                    }
-    elif searchType == "mag":
+    resultFields = {
+        'bookid': book['bookid'],
+        'nzbprov': host,
+        'nzbtitle': nzbdetails[0].text,
+        'nzburl': nzbdetails[2].text,
+        'nzbdate': nzbdetails[4].text,
+        'nzbsize': nzbdetails[10].attrib.get('size')
+        }
+elif searchType == "mag":
         resultFields = {
-                    'bookid': book['bookid'],
-                    'nzbprov': host,
-                    'nzbtitle': nzbdetails[0].text,
-                    'nzburl': nzbdetails[2].text,
-                    'nzbdate': nzbdetails[4].text,
-                    'nzbsize': nzbdetails[7].attrib.get('length')
-                    }
-    else:
+    'bookid': book['bookid'],
+    'nzbprov': host,
+    'nzbtitle': nzbdetails[0].text,
+    'nzburl': nzbdetails[2].text,
+    'nzbdate': nzbdetails[4].text,
+    'nzbsize': nzbdetails[7].attrib.get('length')
+    }
+else:
         resultFields = {
-                    'bookid': book['bookid'],
-                    'nzbprov': host,
-                    'nzbtitle': nzbdetails[0].text,
-                    'nzburl': nzbdetails[2].text,
-                    'nzbdate': nzbdetails[4].text,
-                    'nzbsize': nzbdetails[7].attrib.get('length')
-                    }
+            'bookid': book['bookid'],
+            'nzbprov': host,
+            'nzbtitle': nzbdetails[0].text,
+            'nzburl': nzbdetails[2].text,
+            'nzbdate': nzbdetails[4].text,
+            'nzbsize': nzbdetails[7].attrib.get('length')
+            }
     
     logger.debug('[NewzNabPlus] - result fields from NZB are ' + str(resultFields))
     return resultFields

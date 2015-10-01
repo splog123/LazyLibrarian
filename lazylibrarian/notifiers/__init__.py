@@ -16,15 +16,13 @@
 # You should have received a copy of the GNU General Public License
 # along with LazyLibrarian.  If not, see <http://www.gnu.org/licenses/>.
 
-import lazylibrarian
-
-import tweet
 import boxcar
+import lazylibrarian
+from lazylibrarian.common import *
+import nma
 import pushbullet
 import pushover
-import nma 
-
-from lazylibrarian.common import *
+import tweet
 
 # online
 twitter_notifier = tweet.TwitterNotifier()

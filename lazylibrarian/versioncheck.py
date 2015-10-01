@@ -1,9 +1,14 @@
-import platform, subprocess, re, os, urllib2, tarfile, threading
-
 import lazylibrarian
-from lazylibrarian import logger, version
-
+from lazylibrarian import logger
+from lazylibrarian import version
 import lib.simplejson as simplejson
+import os
+import platform
+import re
+import subprocess
+import tarfile
+import threading
+import urllib2
 
 #
 #Function to execute GIT commands taking care of error logging etc
@@ -18,7 +23,7 @@ def runGit(args):
     
     for cur_git in git_locations:
     
-        cmd = cur_git+' '+args
+        cmd = cur_git + ' ' + args
     
         try:
             logger.debug('(RunGit)Trying to execute: "' + cmd + '" with shell in ' + lazylibrarian.PROG_DIR)
@@ -105,14 +110,14 @@ def getCurrentVersion():
             if current_version:
                 version = current_version
             else:
-                version =  'No Version set in file'
+                version = 'No Version set in file'
     
     else:
         logger.error('(getCurrentVersion) Install Type not set - cannot get version value')
         version = 'Install type not set'
    
     updateVersionFile(version)
-    logger.debug('(getCurrentVersion) - Install type [%s] Local Version is set to [%s] ' % (lazylibrarian.INSTALL_TYPE,version))
+    logger.debug('(getCurrentVersion) - Install type [%s] Local Version is set to [%s] ' % (lazylibrarian.INSTALL_TYPE, version))
     return version
 
 #
@@ -165,7 +170,7 @@ def getLatestVersion():
     elif lazylibrarian.INSTALL_TYPE == 'win':
         latest_version = 'WIN INSTALL'
     else:
-        latest_version =  'UNKNOWN INSTALL'
+        latest_version = 'UNKNOWN INSTALL'
         
     lazylibrarian.LATEST_VERSION = latest_version
     return latest_version
@@ -248,16 +253,16 @@ def getCommitDifferenceFromGit():
 #
 #writes a version.txt file in the LL root dir with value of parameter
 def updateVersionFile(new_version_id):
-        # Update version.txt located in LL home dir.
-        version_path = os.path.join(lazylibrarian.PROG_DIR, 'version.txt')
+    # Update version.txt located in LL home dir.
+    version_path = os.path.join(lazylibrarian.PROG_DIR, 'version.txt')
         
-        try:
-            logger.debug("(updateVersionFile) Updating [%s] with value [%s]" % (version_path, new_version_id))
-            ver_file = open(version_path, 'w')
-            ver_file.write(new_version_id)
-            ver_file.close()
-        except IOError, e:
-            logger.error(u"(updateVersionFile) Unable to write current version to version.txt, update not complete: "+ex(e))
+    try:
+        logger.debug("(updateVersionFile) Updating [%s] with value [%s]" % (version_path, new_version_id))
+        ver_file = open(version_path, 'w')
+        ver_file.write(new_version_id)
+        ver_file.close()
+    except IOError, e:
+        logger.error(u"(updateVersionFile) Unable to write current version to version.txt, update not complete: " + ex(e))
         
 def update():
 
@@ -282,7 +287,7 @@ def update():
                 logger.info('(update) No update available, not updating')
                 logger.info('(update) Output: ' + str(output))
             elif line.endswith('Aborting.'):
-                logger.error('(update) Unable to update from git: '+line)
+                logger.error('(update) Unable to update from git: ' + line)
                 logger.info('(update) Output: ' + str(output))
                 
     elif  lazylibrarian.INSTALL_TYPE == 'source':
@@ -296,10 +301,10 @@ def update():
         version_path = os.path.join(lazylibrarian.PROG_DIR, 'version.txt')
         
         try:
-            logger.info('(update) Downloading update from: '+tar_download_url)
+            logger.info('(update) Downloading update from: ' + tar_download_url)
             data = urllib2.urlopen(tar_download_url)
         except (IOError, URLError):
-            logger.error("(update) Unable to retrieve new version from "+tar_download_url+", can't update")
+            logger.error("(update) Unable to retrieve new version from " + tar_download_url + ", can't update")
             return
             
         download_name = data.geturl().split('/')[-1]
@@ -324,13 +329,13 @@ def update():
         # Find update dir name
         update_dir_contents = [x for x in os.listdir(update_dir) if os.path.isdir(os.path.join(update_dir, x))]
         if len(update_dir_contents) != 1:
-            logger.error(u"(update) Invalid update data, update failed: "+str(update_dir_contents))
+            logger.error(u"(update) Invalid update data, update failed: " + str(update_dir_contents))
             return
         content_dir = os.path.join(update_dir, update_dir_contents[0])
         
         # walk temp folder and move files to main folder
         for dirname, dirnames, filenames in os.walk(content_dir):
-            dirname = dirname[len(content_dir)+1:]
+            dirname = dirname[len(content_dir) + 1:]
             for curfile in filenames:
                 old_path = os.path.join(content_dir, dirname, curfile)
                 new_path = os.path.join(lazylibrarian.PROG_DIR, dirname, curfile)

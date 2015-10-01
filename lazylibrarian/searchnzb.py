@@ -1,21 +1,30 @@
-import time, threading, urllib, urllib2, os, re
-
-from xml.etree import ElementTree
-from xml.etree.ElementTree import Element, SubElement
-
-import lazylibrarian
-import request
-
-from lazylibrarian import logger, database, formatter, providers, nzbget, sabnzbd, SimpleCache, notifiers, searchmag, classes
-
-import lib.fuzzywuzzy as fuzzywuzzy
-from lib.fuzzywuzzy import fuzz, process
-
-from lazylibrarian.common import USER_AGENT
-
-#new to support torrents
 from StringIO import StringIO
 import gzip
+import lazylibrarian
+from lazylibrarian import SimpleCache
+from lazylibrarian import classes
+from lazylibrarian import database
+from lazylibrarian import formatter
+from lazylibrarian import logger
+from lazylibrarian import notifiers
+from lazylibrarian import nzbget
+from lazylibrarian import providers
+from lazylibrarian import sabnzbd
+from lazylibrarian import searchmag
+from lazylibrarian.common import USER_AGENT
+import lib.fuzzywuzzy as fuzzywuzzy
+from lib.fuzzywuzzy import fuzz
+from lib.fuzzywuzzy import process
+import os
+import re
+import request
+import threading
+import time
+import urllib
+import urllib2
+from xml.etree import ElementTree
+from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import SubElement
 
 def search_nzb_book(books=None, mags=None):
     if not(lazylibrarian.USE_NZB):
@@ -63,7 +72,7 @@ def search_nzb_book(books=None, mags=None):
         searchterm = author + ' ' + book # + ' ' + lazylibrarian.EBOOK_TYPE 
         searchterm = re.sub('[\.\-\/]', ' ', searchterm).encode('utf-8')
         searchterm = re.sub(r'\(.*?\)', '', searchterm).encode('utf-8')
-        searchterm = re.sub(r"\s\s+" , " ", searchterm) # strip any double white space
+        searchterm = re.sub(r"\s\s+", " ", searchterm) # strip any double white space
         searchlist.append({"bookid": bookid, "bookName":searchbook[2], "authorName":searchbook[1], "searchterm": searchterm.strip()})
     
     if not lazylibrarian.SAB_HOST and not lazylibrarian.NZB_DOWNLOADER_BLACKHOLE and not lazylibrarian.NZBGET_HOST:
@@ -76,24 +85,24 @@ def search_nzb_book(books=None, mags=None):
     counter = 0
     for book in searchlist: 
         #print book.keys()
-        resultlist = providers.IterateOverNewzNabSites(book,'book')
+        resultlist = providers.IterateOverNewzNabSites(book, 'book')
 
         #if you can't find teh book specifically, you might find under general search
         if not resultlist:
             logger.info("Searching for type book failed to find any books...moving to general search")
-            resultlist = providers.IterateOverNewzNabSites(book,'general')
+            resultlist = providers.IterateOverNewzNabSites(book, 'general')
 
         if not resultlist:
             logger.debug("Adding book %s to queue." % book['searchterm'])
 
         else:
-            dictrepl = {'...':'', '.':' ', ' & ':' ', ' = ': ' ', '?':'', '$':'s', ' + ':' ', '"':'', ',':'', '*':'', '(':'', ')':'', '[':'', ']':'', '#':'', '0':'', '1':'', '2':'', '3':'', '4':'', '5':'', '6':'', '7':'', '8':'' , '9':'', '\'':'', ':':'', '!':'', '-':'', '\s\s':' ', ' the ':' ', ' a ':' ', ' and ':' ', ' to ':' ', ' of ':' ', ' for ':' ', ' my ':' ', ' in ':' ', ' at ':' ', ' with ':' ' }
+            dictrepl = {'...':'', '.':' ', ' & ':' ', ' = ': ' ', '?':'', '$':'s', ' + ':' ', '"':'', ',':'', '*':'', '(':'', ')':'', '[':'', ']':'', '#':'', '0':'', '1':'', '2':'', '3':'', '4':'', '5':'', '6':'', '7':'', '8':'', '9':'', '\'':'', ':':'', '!':'', '-':'', '\s\s':' ', ' the ':' ', ' a ':' ', ' and ':' ', ' to ':' ', ' of ':' ', ' for ':' ', ' my ':' ', ' in ':' ', ' at ':' ', ' with ':' '}
             logger.debug(u'searchterm %s' % book['searchterm'])
             addedCounter = 0
 
             for nzb in resultlist:
                 nzbTitle = formatter.latinToAscii(formatter.replace_all(str(nzb['nzbtitle']).lower(), dictrepl)).strip()
-                nzbTitle = re.sub(r"\s\s+" , " ", nzbTitle) #remove extra whitespace
+                nzbTitle = re.sub(r"\s\s+", " ", nzbTitle) #remove extra whitespace
                 logger.debug(u'nzbName %s' % nzbTitle)          
 
                 match_ratio = int(lazylibrarian.MATCH_RATIO)
@@ -111,7 +120,7 @@ def search_nzb_book(books=None, mags=None):
                     nzbsize_temp = nzb['nzbsize']  #Need to cater for when this is NONE (Issue 35)
                     if nzbsize_temp is None:
                         nzbsize_temp = 1000
-                    nzbsize = str(round(float(nzbsize_temp) / 1048576,2))+' MB'
+                    nzbsize = str(round(float(nzbsize_temp) / 1048576, 2)) + ' MB'
                     nzbdate = formatter.nzbdate2format(nzbdate_temp)
                     
                     controlValueDict = {"NZBurl": nzburl}
@@ -128,18 +137,18 @@ def search_nzb_book(books=None, mags=None):
                     snatchedbooks = myDB.action('SELECT * from books WHERE BookID=? and Status="Snatched"', [bookid]).fetchone()
                     if not snatchedbooks:
                         snatch = DownloadMethod(bookid, nzbprov, nzbTitle, nzburl)
-                        notifiers.notify_snatch(nzbTitle+' at '+formatter.now()) 
-                    break;
+    notifiers.notify_snatch(nzbTitle + ' at ' + formatter.now())
+break;
             if addedCounter == 0:
                 logger.info("No nzb's found for " + (book["authorName"] + ' ' + book['bookName']).strip() + ". Adding book to queue.")
         counter = counter + 1
 
-    if not books or books==False:
+    if not books or books == False:
         snatched = searchmag.searchmagazines(mags)
         for items in snatched:
             snatch = DownloadMethod(items['bookid'], items['nzbprov'], items['nzbtitle'], items['nzburl'])
-            notifiers.notify_snatch(items['nzbtitle']+' at '+formatter.now()) 
-    logger.info("Search for Wanted items complete")
+    notifiers.notify_snatch(items['nzbtitle'] + ' at ' + formatter.now())
+logger.info("Search for Wanted items complete")
 
 
 def DownloadMethod(bookid=None, nzbprov=None, nzbtitle=None, nzburl=None):
@@ -207,9 +216,9 @@ def DownloadMethod(bookid=None, nzbprov=None, nzbtitle=None, nzburl=None):
 
 def MakeSearchTermWebSafe(insearchterm=None):
 
-        dic = {'...':'', ' & ':' ', ' = ': ' ', '?':'', '$':'s', ' + ':' ', '"':'', ',':'', '*':''}
+    dic = {'...':'', ' & ':' ', ' = ': ' ', '?':'', '$':'s', ' + ':' ', '"':'', ',':'', '*':''}
 
-        searchterm = formatter.latinToAscii(formatter.replace_all(insearchterm, dic))
+    searchterm = formatter.latinToAscii(formatter.replace_all(insearchterm, dic))
 
         searchterm = re.sub('[\.\-\/]', ' ', searchterm).encode('utf-8')
         

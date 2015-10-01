@@ -17,8 +17,9 @@
 # along with LazyLibrarian.  If not, see <http://www.gnu.org/licenses/>.
 
 import lazylibrarian
-
-from lazylibrarian import logger, common, formatter
+from lazylibrarian import common
+from lazylibrarian import formatter
+from lazylibrarian import logger
 
 # parse_qsl moved to urlparse module in v2.6
 try:
@@ -41,11 +42,11 @@ class TwitterNotifier:
     
     def notify_snatch(self, title):
         if lazylibrarian.TWITTER_NOTIFY_ONSNATCH:
-            self._notifyTwitter(common.notifyStrings[common.NOTIFY_SNATCH]+': '+title)
+            self._notifyTwitter(common.notifyStrings[common.NOTIFY_SNATCH] + ': ' + title)
 
     def notify_download(self, title):
         if lazylibrarian.TWITTER_NOTIFY_ONDOWNLOAD:
-            self._notifyTwitter(common.notifyStrings[common.NOTIFY_DOWNLOAD]+': '+title)
+            self._notifyTwitter(common.notifyStrings[common.NOTIFY_DOWNLOAD] + ': ' + title)
 
     def test_notify(self):
         return self._notifyTwitter("This is a test notification from LazyLibrarian / " + formatter.now(), force=True)
@@ -68,7 +69,7 @@ class TwitterNotifier:
             lazylibrarian.TWITTER_USERNAME = request_token['oauth_token']
             lazylibrarian.TWITTER_PASSWORD = request_token['oauth_token_secret']
     
-            return self.AUTHORIZATION_URL+"?oauth_token="+ request_token['oauth_token']
+            return self.AUTHORIZATION_URL + "?oauth_token=" + request_token['oauth_token']
     
     def _get_credentials(self, key):
         request_token = {}
@@ -80,22 +81,22 @@ class TwitterNotifier:
         token = oauth.Token(request_token['oauth_token'], request_token['oauth_token_secret'])
         token.set_verifier(key)
     
-        logger.info('Generating and signing request for an access token using key '+key)
+        logger.info('Generating and signing request for an access token using key ' + key)
     
         signature_method_hmac_sha1 = oauth.SignatureMethod_HMAC_SHA1() #@UnusedVariable
         oauth_consumer             = oauth.Consumer(key=self.consumer_key, secret=self.consumer_secret)
-        logger.info('oauth_consumer: '+str(oauth_consumer))
+        logger.info('oauth_consumer: ' + str(oauth_consumer))
         oauth_client  = oauth.Client(oauth_consumer, token)
-        logger.info('oauth_client: '+str(oauth_client))
+        logger.info('oauth_client: ' + str(oauth_client))
         resp, content = oauth_client.request(self.ACCESS_TOKEN_URL, method='POST', body='oauth_verifier=%s' % key)
-        logger.info('resp, content: '+str(resp)+','+str(content))
+        logger.info('resp, content: ' + str(resp) + ',' + str(content))
     
         access_token  = dict(parse_qsl(content))
-        logger.info('access_token: '+str(access_token))
+        logger.info('access_token: ' + str(access_token))
     
-        logger.info('resp[status] = '+str(resp['status']))
+        logger.info('resp[status] = ' + str(resp['status']))
         if resp['status'] != '200':
-            logger.error('The request for a token with did not succeed: '+str(resp['status']))
+            logger.error('The request for a token with did not succeed: ' + str(resp['status']))
             return False
         else:
             logger.info('Your Twitter Access Token key: %s' % access_token['oauth_token'])
@@ -107,19 +108,19 @@ class TwitterNotifier:
     
     def _send_tweet(self, message=None):
     
-        username=self.consumer_key
-        password=self.consumer_secret
-        access_token_key=lazylibrarian.TWITTER_USERNAME
-        access_token_secret=lazylibrarian.TWITTER_PASSWORD
+        username = self.consumer_key
+        password = self.consumer_secret
+        access_token_key = lazylibrarian.TWITTER_USERNAME
+        access_token_secret = lazylibrarian.TWITTER_PASSWORD
     
-        logger.info(u"Sending tweet: "+message)
+        logger.info(u"Sending tweet: " + message)
     
         api = twitter.Api(username, password, access_token_key, access_token_secret)
     
         try:
             api.PostUpdate(message)
         except Exception, e:
-            logger.error(u"Error Sending Tweet: %s" %e)
+            logger.error(u"Error Sending Tweet: %s" % e)
             return False
     
         return True

@@ -1,25 +1,35 @@
-import time, threading, urllib, urllib2, os, re, sys
-from base64 import b16encode, b32decode
-from lib.bencode import bencode as bencode, bdecode
-from hashlib import sha1
-from xml.etree import ElementTree
-from xml.etree.ElementTree import Element, SubElement
-
-import lazylibrarian
-
-from lazylibrarian import logger, database, formatter, providers, SimpleCache, notifiers, searchmag, utorrent, transmission
-
-from lib.deluge_client import DelugeRPCClient
-
-import lib.fuzzywuzzy as fuzzywuzzy
-from lib.fuzzywuzzy import fuzz, process
-
-#from lazylibrarian.common import USER_AGENT
-
-import lazylibrarian.common as common
-#new to support torrents
 from StringIO import StringIO
+from base64 import b16encode
+from base64 import b32decode
 import gzip
+from hashlib import sha1
+import lazylibrarian
+from lazylibrarian import SimpleCache
+from lazylibrarian import database
+from lazylibrarian import formatter
+from lazylibrarian import logger
+from lazylibrarian import notifiers
+from lazylibrarian import providers
+from lazylibrarian import searchmag
+from lazylibrarian import transmission
+from lazylibrarian import utorrent
+import lazylibrarian.common as common
+from lib.bencode import bdecode
+from lib.bencode import bencode as bencode
+from lib.deluge_client import DelugeRPCClient
+import lib.fuzzywuzzy as fuzzywuzzy
+from lib.fuzzywuzzy import fuzz
+from lib.fuzzywuzzy import process
+import os
+import re
+import sys
+import threading
+import time
+import urllib
+import urllib2
+from xml.etree import ElementTree
+from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import SubElement
 
 def search_tor_book(books=None, mags=None):
     if not(lazylibrarian.USE_TOR):
@@ -67,7 +77,7 @@ def search_tor_book(books=None, mags=None):
         searchterm = author + ' ' + book # + ' ' + lazylibrarian.EBOOK_TYPE 
         searchterm = re.sub('[\.\-\/]', ' ', searchterm).encode('utf-8')
         searchterm = re.sub(r'\(.*?\)', '', searchterm).encode('utf-8')
-        searchterm = re.sub(r"\s\s+" , " ", searchterm) # strip any double white space
+        searchterm = re.sub(r"\s\s+", " ", searchterm) # strip any double white space
         searchlist.append({"bookid": bookid, "bookName":searchbook[2], "authorName":searchbook[1], "searchterm": searchterm.strip()})
     
     if not lazylibrarian.KAT:
@@ -77,24 +87,24 @@ def search_tor_book(books=None, mags=None):
     counter = 0
     for book in searchlist: 
         #print book.keys()
-        resultlist = providers.IterateOverTorrentSites(book,'book')
+        resultlist = providers.IterateOverTorrentSites(book, 'book')
 
         #if you can't find teh book specifically, you might find under general search
         if not resultlist:
             logger.info("Searching for type book failed to find any books...moving to general search")
-            resultlist = providers.IterateOverTorrentSites(book,'general')
+            resultlist = providers.IterateOverTorrentSites(book, 'general')
 
         if not resultlist:
             logger.debug("Adding book %s to queue." % book['searchterm'])
 
         else:
-            dictrepl = {'...':'', '.':' ', ' & ':' ', ' = ': ' ', '?':'', '$':'s', ' + ':' ', '"':'', ',':'', '*':'', '(':'', ')':'', '[':'', ']':'', '#':'', '0':'', '1':'', '2':'', '3':'', '4':'', '5':'', '6':'', '7':'', '8':'' , '9':'', '\'':'', ':':'', '!':'', '-':'', '\s\s':' ', ' the ':' ', ' a ':' ', ' and ':' ', ' to ':' ', ' of ':' ', ' for ':' ', ' my ':' ', ' in ':' ', ' at ':' ', ' with ':' ' }
+            dictrepl = {'...':'', '.':' ', ' & ':' ', ' = ': ' ', '?':'', '$':'s', ' + ':' ', '"':'', ',':'', '*':'', '(':'', ')':'', '[':'', ']':'', '#':'', '0':'', '1':'', '2':'', '3':'', '4':'', '5':'', '6':'', '7':'', '8':'', '9':'', '\'':'', ':':'', '!':'', '-':'', '\s\s':' ', ' the ':' ', ' a ':' ', ' and ':' ', ' to ':' ', ' of ':' ', ' for ':' ', ' my ':' ', ' in ':' ', ' at ':' ', ' with ':' '}
             logger.debug(u'searchterm %s' % book['searchterm'])
             addedCounter = 0
 
             for tor in resultlist:
                 tor_Title = formatter.latinToAscii(formatter.replace_all(str(tor['tor_title']).lower(), dictrepl)).strip()
-                tor_Title = re.sub(r"\s\s+" , " ", tor_Title) #remove extra whitespace
+                tor_Title = re.sub(r"\s\s+", " ", tor_Title) #remove extra whitespace
                 logger.debug(u'torName %s' % tor_Title)          
 
                 match_ratio = int(lazylibrarian.MATCH_RATIO)
@@ -112,7 +122,7 @@ def search_tor_book(books=None, mags=None):
                     tor_size_temp = tor['tor_size']  #Need to cater for when this is NONE (Issue 35)
                     if tor_size_temp is None:
                         tor_size_temp = 1000
-                    tor_size = str(round(float(tor_size_temp) / 1048576,2))+' MB'
+                    tor_size = str(round(float(tor_size_temp) / 1048576, 2)) + ' MB'
                     
                     controlValueDict = {"NZBurl": tor_url}
                     newValueDict = {
@@ -127,18 +137,18 @@ def search_tor_book(books=None, mags=None):
                     snatchedbooks = myDB.action('SELECT * from books WHERE BookID=? and Status="Snatched"', [bookid]).fetchone()
                     if not snatchedbooks:
                         snatch = DownloadMethod(bookid, tor_prov, tor_Title, tor_url)
-                        notifiers.notify_snatch(tor_Title+' at '+formatter.now()) 
-                    break;
+    notifiers.notify_snatch(tor_Title + ' at ' + formatter.now())
+break;
             if addedCounter == 0:
                 logger.info("No torrent's found for " + (book["authorName"] + ' ' + book['bookName']).strip() + ". Adding book to queue.")
         counter = counter + 1
 
-   # if not books or books==False:
-   #     snatched = searchmag.searchmagazines(mags)
-   #     for items in snatched:
-   #         snatch = DownloadMethod(items['bookid'], items['tor_prov'], items['tor_title'], items['tor_url'])
-   #         notifiers.notify_snatch(items['tor_title']+' at '+formatter.now()) 
-    logger.info("Search for Wanted items complete")
+# if not books or books==False:
+    #     snatched = searchmag.searchmagazines(mags)
+    #     for items in snatched:
+    #         snatch = DownloadMethod(items['bookid'], items['tor_prov'], items['tor_title'], items['tor_url'])
+    #         notifiers.notify_snatch(items['tor_title']+' at '+formatter.now())
+        logger.info("Search for Wanted items complete")
 
 
 def DownloadMethod(bookid=None, tor_prov=None, tor_title=None, tor_url=None):
@@ -146,11 +156,11 @@ def DownloadMethod(bookid=None, tor_prov=None, tor_title=None, tor_url=None):
     myDB = database.DBConnection()
     download = False
     if (lazylibrarian.USE_TOR) and (lazylibrarian.TOR_DOWNLOADER_DELUGE or  lazylibrarian.TOR_DOWNLOADER_UTORRENT
-                                    or lazylibrarian.TOR_DOWNLOADER_BLACKHOLE or lazylibrarian.TOR_DOWNLOADER_TRANSMISSION):
-        request = urllib2.Request(tor_url)
+    or lazylibrarian.TOR_DOWNLOADER_BLACKHOLE or lazylibrarian.TOR_DOWNLOADER_TRANSMISSION):
+request = urllib2.Request(tor_url)
 	if lazylibrarian.PROXY_HOST:
-		request.set_proxy(lazylibrarian.PROXY_HOST, lazylibrarian.PROXY_TYPE)
-        request.add_header('Accept-encoding', 'gzip')
+    request.set_proxy(lazylibrarian.PROXY_HOST, lazylibrarian.PROXY_TYPE)
+request.add_header('Accept-encoding', 'gzip')
 	request.add_header('User-Agent', common.USER_AGENT)
     
         if tor_prov == 'KAT':
@@ -170,7 +180,7 @@ def DownloadMethod(bookid=None, tor_prov=None, tor_title=None, tor_url=None):
             tor_name = str.replace(str(tor_title), ' ', '_') + '.torrent'
             tor_path = os.path.join(lazylibrarian.TORRENT_DIR, tor_name)
 
-            torrent_file = open(tor_path , 'wb')
+            torrent_file = open(tor_path, 'wb')
             torrent_file.write(torrent)
             torrent_file.close()
             logger.info('Torrent file saved: %s' % tor_title)
@@ -187,11 +197,11 @@ def DownloadMethod(bookid=None, tor_prov=None, tor_title=None, tor_url=None):
 
         if (lazylibrarian.TOR_DOWNLOADER_DELUGE):
             client = DelugeRPCClient(lazylibrarian.DELUGE_HOST,
-                    int(lazylibrarian.DELUGE_PORT),
-                    lazylibrarian.DELUGE_USER,
-                    lazylibrarian.DELUGE_PASS)
-            client.connect()
-            download = client.call('add_torrent_url',tor_url, {"name": tor_title})
+    int(lazylibrarian.DELUGE_PORT),
+    lazylibrarian.DELUGE_USER,
+    lazylibrarian.DELUGE_PASS)
+client.connect()
+            download = client.call('add_torrent_url', tor_url, {"name": tor_title})
             logger.info('Deluge return value: %s' % download)
 
     else:
@@ -222,9 +232,9 @@ def CalcTorrentHash(torrent):
 
 def MakeSearchTermWebSafe(insearchterm=None):
 
-        dic = {'...':'', ' & ':' ', ' = ': ' ', '?':'', '$':'s', ' + ':' ', '"':'', ',':'', '*':''}
+    dic = {'...':'', ' & ':' ', ' = ': ' ', '?':'', '$':'s', ' + ':' ', '"':'', ',':'', '*':''}
 
-        searchterm = formatter.latinToAscii(formatter.replace_all(insearchterm, dic))
+    searchterm = formatter.latinToAscii(formatter.replace_all(insearchterm, dic))
 
         searchterm = re.sub('[\.\-\/]', ' ', searchterm).encode('utf-8')
         

@@ -1,17 +1,16 @@
+from lazylibrarian import searchnzb
 import unittest
-
-from lazylibrarian import  searchnzb
 
 
 class SearchNZBTest(unittest.TestCase):
 
-   def test_MakeSearchTermWebSafe(self):
+    def test_MakeSearchTermWebSafe(self):
         result = searchnzb.MakeSearchTermWebSafe("abc")
-        self.assertEquals("abc",result)
+        self.assertEquals("abc", result)
 
-   def test_MakeSearchTermWebSafe2(self):
+    def test_MakeSearchTermWebSafe2(self):
         result = searchnzb.MakeSearchTermWebSafe("a + b?c")
-        self.assertEquals("a bc",result)
+        self.assertEquals("a bc", result)
 
 
 if __name__ == '__main__':

@@ -27,7 +27,7 @@ last_requests = collections.defaultdict(int)
 
 
 def request_response(url, method="get", auto_raise=True,
-                     whitelist_status_code=None, **kwargs):
+                     whitelist_status_code = None, ** kwargs):
     """
     Convenient wrapper for `requests.get', which will capture the exceptions
     and log them. On success, the Response object is returned. In case of a
@@ -56,8 +56,8 @@ def request_response(url, method="get", auto_raise=True,
         # Request URL and wait for response
         #with lock:
         logger.debug(
-                "Requesting URL via %s method: %s" % (method.upper(), url))
-        response = request_method(url, **kwargs)
+    "Requesting URL via %s method: %s" % (method.upper(), url))
+response = request_method(url, ** kwargs)
 
         # If status code != OK, then raise exception, except if the status code
         # is white listed.
@@ -67,9 +67,9 @@ def request_response(url, method="get", auto_raise=True,
                     response.raise_for_status()
                 except:
                     logger.debug(
-                        "Response status code %d is not white "
-                        "listed, raised exception" % response.status_code)
-                    raise
+    "Response status code %d is not white "
+    "listed, raised exception" % response.status_code)
+raise
         elif auto_raise:
             response.raise_for_status()
 
@@ -77,23 +77,23 @@ def request_response(url, method="get", auto_raise=True,
     except requests.exceptions.SSLError as e:
         if kwargs["verify"]:
             logger.error(
-                "Unable to connect to remote host because of a SSL error. "
-                "It is likely that your system cannot verify the validity"
-                "of the certificate. The remote certificate is either "
-                "self-signed, or the remote server uses SNI. See the wiki for "
-                "more information on this topic.")
-        else:
+    "Unable to connect to remote host because of a SSL error. "
+    "It is likely that your system cannot verify the validity"
+    "of the certificate. The remote certificate is either "
+    "self-signed, or the remote server uses SNI. See the wiki for "
+    "more information on this topic.")
+else:
             logger.error(
-                "SSL error raised during connection, with certificate "
-                "verification turned off: %s", e)
-    except requests.ConnectionError:
+    "SSL error raised during connection, with certificate "
+    "verification turned off: %s", e)
+except requests.ConnectionError:
         logger.error(
-            "Unable to connect to remote host. Check if the remote "
-            "host is up and running.")
-    except requests.Timeout:
+    "Unable to connect to remote host. Check if the remote "
+    "host is up and running.")
+except requests.Timeout:
         logger.error(
-            "Request timed out. The remote host did not respond timely.")
-    except requests.HTTPError as e:
+    "Request timed out. The remote host did not respond timely.")
+except requests.HTTPError as e:
         if e.response is not None:
             if e.response.status_code >= 500:
                 cause = "remote server error"
@@ -104,8 +104,8 @@ def request_response(url, method="get", auto_raise=True,
                 cause = "unknown"
 
             logger.error(
-                "Request raise HTTP error with status code %d (%s).",
-                e.response.status_code, cause)
+                         "Request raise HTTP error with status code %d (%s).",
+                         e.response.status_code, cause)
 
             # Debug response
             if lazylibrarian.VERBOSE:
@@ -116,32 +116,32 @@ def request_response(url, method="get", auto_raise=True,
         logger.error("Request raised exception: %s", e)
 
 
-def request_soup(url, **kwargs):
+def request_soup(url, ** kwargs):
     """
     Wrapper for `request_response', which will return a BeatifulSoup object if
     no exceptions are raised.
     """
 
     parser = kwargs.pop("parser", "html5lib")
-    response = request_response(url, **kwargs)
+    response = request_response(url, ** kwargs)
 
     if response is not None:
         return response.content
 
 
-def request_minidom(url, **kwargs):
+def request_minidom(url, ** kwargs):
     """
     Wrapper for `request_response', which will return a Minidom object if no
     exceptions are raised.
     """
 
-    response = request_response(url, **kwargs)
+    response = request_response(url, ** kwargs)
 
     if response is not None:
         return minidom.parseString(response.content)
 
 
-def request_json(url, **kwargs):
+def request_json(url, ** kwargs):
     """
     Wrapper for `request_response', which will decode the response as JSON
     object and return the result, if no exceptions are raised.
@@ -151,7 +151,7 @@ def request_json(url, **kwargs):
     """
 
     validator = kwargs.pop("validator", None)
-    response = request_response(url, **kwargs)
+    response = request_response(url, ** kwargs)
 
     if response is not None:
         try:
@@ -169,23 +169,23 @@ def request_json(url, **kwargs):
                 server_message(response)
 
 
-def request_content(url, **kwargs):
+def request_content(url, ** kwargs):
     """
     Wrapper for `request_response', which will return the raw content.
     """
 
-    response = request_response(url, **kwargs)
+    response = request_response(url, ** kwargs)
 
     if response is not None:
         return response.content
 
 
-def request_feed(url, **kwargs):
+def request_feed(url, ** kwargs):
     """
     Wrapper for `request_response', which will return a feed object.
     """
 
-    response = request_response(url, **kwargs)
+    response = request_response(url, ** kwargs)
 
     if response is not None:
         return feedparser.parse(response.content)

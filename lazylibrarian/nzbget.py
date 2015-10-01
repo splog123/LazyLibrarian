@@ -19,14 +19,11 @@
 # along with LazyLibrarian.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import httplib
-
-import lazylibrarian
-
 from base64 import standard_b64encode
-import xmlrpclib
-
+import httplib
+import lazylibrarian
 from lazylibrarian import logger
+import xmlrpclib
 
 
 def sendNZB(nzb):
@@ -98,21 +95,21 @@ def sendNZB(nzb):
         elif nzbget_version == 12:
             if nzbcontent64 is not None:
                 nzbget_result = nzbGetRPC.append(nzb.name + ".nzb", lazylibrarian.NZBGET_CATEGORY, lazylibrarian.NZBGET_PRIORITY, False,
-                                                 nzbcontent64, False, dupekey, dupescore, "score")
-            else:
+    nzbcontent64, False, dupekey, dupescore, "score")
+else:
                 nzbget_result = nzbGetRPC.appendurl(nzb.name + ".nzb", lazylibrarian.NZBGET_CATEGORY, lazylibrarian.NZBGET_PRIORITY, False,
-                                                    nzb.url, False, dupekey, dupescore, "score")
-        # v13+ has a new combined append method that accepts both (url and content)
+    nzb.url, False, dupekey, dupescore, "score")
+# v13+ has a new combined append method that accepts both (url and content)
         # also the return value has changed from boolean to integer
         # (Positive number representing NZBID of the queue item. 0 and negative numbers represent error codes.)
         elif nzbget_version >= 13:
             nzbget_result = True if nzbGetRPC.append(nzb.name + ".nzb", nzbcontent64 if nzbcontent64 is not None else nzb.url,
-                                                     lazylibrarian.NZBGET_CATEGORY, lazylibrarian.NZBGET_PRIORITY, "False", "False", dupekey, dupescore, "score") > 0 else False
-        else:
+    lazylibrarian.NZBGET_CATEGORY, lazylibrarian.NZBGET_PRIORITY, "False", "False", dupekey, dupescore, "score") > 0 else False
+else:
             if nzbcontent64 is not None:
                 nzbget_result = nzbGetRPC.append(nzb.name + ".nzb", lazylibrarian.NZBGET_CATEGORY, lazylibrarian.NZBGET_PRIORITY, False,
-                                                 nzbcontent64)
-            else:
+    nzbcontent64)
+else:
                 nzbget_result = nzbGetRPC.appendurl(nzb.name + ".nzb", lazylibrarian.NZBGET_CATEGORY, lazylibrarian.NZBGET_PRIORITY, False,
                                                     nzb.url)
 

@@ -17,14 +17,14 @@
 # You should have received a copy of the GNU General Public License
 # along with LazyLibrarian.  If not, see <http://www.gnu.org/licenses/>.
 
+import lazylibrarian
+from lazylibrarian import logger
+from lazylibrarian.common import NOTIFY_DOWNLOAD
+from lazylibrarian.common import NOTIFY_SNATCH
+from lazylibrarian.common import notifyStrings
+import time
 import urllib
 import urllib2
-import time
-
-import lazylibrarian
-
-from lazylibrarian import logger
-from lazylibrarian.common import notifyStrings, NOTIFY_SNATCH, NOTIFY_DOWNLOAD
 #from lazylibrarian.exceptions import ex
 
 #API_URL = "https://boxcar.io/devices/providers/MH0S7xOFSwVLNvNhTpiC/notifications"
@@ -64,11 +64,11 @@ class BoxcarNotifier:
             #    'notification[from_remote_service_id]': int(time.time())
             #    })
 	    data = urllib.urlencode({
-	         'user_credentials': token,
-	         'notification[title]': title.encode('utf-8'),
-	         'notification[long_message]':msg.encode('utf-8'),
-	         'notification[sound]': "done"
-	         })
+                                    'user_credentials': token,
+                                    'notification[title]': title.encode('utf-8'),
+                                    'notification[long_message]':msg.encode('utf-8'),
+                                    'notification[sound]': "done"
+                                    })
 
         # send the request to boxcar
         try:

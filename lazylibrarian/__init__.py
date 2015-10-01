@@ -1,15 +1,21 @@
 from __future__ import with_statement
-
-import os, sys, subprocess, threading, cherrypy, webbrowser, sqlite3, re
-
+import cherrypy
 import datetime
-
-from lib.configobj import ConfigObj
+from lazylibrarian import SimpleCache
+from lazylibrarian import librarysync
+from lazylibrarian import logger
+from lazylibrarian import postprocess
+from lazylibrarian import searchnzb
+from lazylibrarian import searchtorrents
 from lib.apscheduler.scheduler import Scheduler
-
+from lib.configobj import ConfigObj
+import os
+import re
+import sqlite3
+import subprocess
+import sys
 import threading
-
-from lazylibrarian import logger, postprocess, searchnzb, searchtorrents, SimpleCache, librarysync
+import webbrowser
 
 FULL_PATH = None
 PROG_DIR = None
@@ -37,7 +43,7 @@ LATEST_VERSION = None
 COMMITS_BEHIND = None
 
 DATADIR = None
-DBFILE=None
+DBFILE = None
 CONFIGFILE = None
 CFG = None
 
@@ -63,7 +69,7 @@ PROXY_TYPE = None
 
 SAB_HOST = None
 SAB_PORT = None
-SAB_SUBDIR=None
+SAB_SUBDIR = None
 SAB_USER = None
 SAB_PASS = None
 SAB_API = None
@@ -310,14 +316,14 @@ def initialize():
         # Start the logger, silence console logging if we need to
         CFGLOGLEVEL = check_setting_int(CFG, 'General', 'loglevel', 3)
         if CFGLOGLEVEL == 3:    #default value if none in config
-            LOGLEVEL=2    #If not set in Config, then lets set to DEBUG
-        else:
+    LOGLEVEL = 2    #If not set in Config, then lets set to DEBUG
+else:
             LOGLEVEL = CFGLOGLEVEL  #Config setting picked up
         LOGSIZE = check_setting_int(CFG, 'General', 'logsize', 51200)
         LOGCOUNT = check_setting_int(CFG, 'General', 'logcount', 5)
             
         logger.lazylibrarian_log.initLogger(loglevel=LOGLEVEL, logsize=LOGSIZE, logcount=LOGCOUNT)
-        logger.info("Log level set to [%s]- Log Directory is [%s] - Config level is [%s]" % (LOGLEVEL,LOGDIR,CFGLOGLEVEL))
+        logger.info("Log level set to [%s]- Log Directory is [%s] - Config level is [%s]" % (LOGLEVEL, LOGDIR, CFGLOGLEVEL))
 
         MATCH_RATIO = check_setting_int(CFG, 'General', 'match_ratio', 80)
         HTTP_HOST = check_setting_str(CFG, 'General', 'http_host', '0.0.0.0')
@@ -328,8 +334,8 @@ def initialize():
 
         LAUNCH_BROWSER = bool(check_setting_int(CFG, 'General', 'launch_browser', 1))
 	
-	PROXY_HOST = check_setting_str(CFG, 'General','proxy_host', '')
-	PROXY_TYPE = check_setting_str(CFG, 'General','proxy_type', '')
+	PROXY_HOST = check_setting_str(CFG, 'General', 'proxy_host', '')
+	PROXY_TYPE = check_setting_str(CFG, 'General', 'proxy_type', '')
 
         LOGDIR = check_setting_str(CFG, 'General', 'logdir', '')
         LOGSIZE = check_setting_int(CFG, 'General', 'logsize', 51200)
@@ -364,7 +370,7 @@ def initialize():
         NZBGET_PRIORITY = check_setting_int(CFG, 'NZBGet', 'nzbget_priority', '0')
 
         DESTINATION_COPY = bool(check_setting_int(CFG, 'General', 'destination_copy', 0))
-        DESTINATION_DIR = check_setting_str(CFG, 'General','destination_dir', '')
+        DESTINATION_DIR = check_setting_str(CFG, 'General', 'destination_dir', '')
         DOWNLOAD_DIR = check_setting_str(CFG, 'General', 'download_dir', '')
                 
         USE_NZB = bool(check_setting_int(CFG, 'DLMethod', 'use_nzb', 0))
@@ -390,7 +396,7 @@ def initialize():
         TOR_DOWNLOADER_BLACKHOLE = bool(check_setting_int(CFG, 'TORRENT', 'tor_downloader_blackhole', 0))
         TOR_DOWNLOADER_UTORRENT = bool(check_setting_int(CFG, 'TORRENT', 'tor_downloader_utorrent', 0))
         TOR_DOWNLOADER_TRANSMISSION = bool(check_setting_int(CFG, 'TORRENT', 'tor_downloader_transmission', 0))
-        TOR_DOWNLOADER_DELUGE =  bool(check_setting_int(CFG, 'TORRENT', 'tor_downloader_deluge',0))
+        TOR_DOWNLOADER_DELUGE = bool(check_setting_int(CFG, 'TORRENT', 'tor_downloader_deluge', 0))
         NUMBEROFSEEDERS = check_setting_int(CFG, 'TORRENT', 'numberofseeders', 10)
         TORRENT_DIR  = check_setting_str(CFG, 'TORRENT', 'torrent_dir', '')
 
@@ -424,7 +430,7 @@ def initialize():
         VERSIONCHECK_INTERVAL = int(check_setting_str(CFG, 'SearchScan', 'versioncheck_interval', '24'))
 
         FULL_SCAN = bool(check_setting_int(CFG, 'LibraryScan', 'full_scan', 0))
-	NOTFOUND_STATUS = check_setting_str(CFG, 'LibraryScan', 'notfound_status','Skipped')
+	NOTFOUND_STATUS = check_setting_str(CFG, 'LibraryScan', 'notfound_status', 'Skipped')
 	ADD_AUTHOR = bool(check_setting_int(CFG, 'LibraryScan', 'add_author', 0))
 
         EBOOK_DEST_FOLDER = check_setting_str(CFG, 'PostProcess', 'ebook_dest_folder', '$Author/$Title')
@@ -439,23 +445,23 @@ def initialize():
         TWITTER_PASSWORD = check_setting_str(CFG, 'Twitter', 'twitter_password', '')
         TWITTER_PREFIX = check_setting_str(CFG, 'Twitter', 'twitter_prefix', 'LazyLibrarian')
 
-        USE_BOXCAR = bool(check_setting_int(CFG, 'Boxcar', 'use_boxcar',0))
+        USE_BOXCAR = bool(check_setting_int(CFG, 'Boxcar', 'use_boxcar', 0))
         BOXCAR_NOTIFY_ONSNATCH = bool(check_setting_int(CFG, 'Boxcar', 'boxcar_notify_onsnatch', 0))
         BOXCAR_NOTIFY_ONDOWNLOAD = bool(check_setting_int(CFG, 'Boxcar', 'boxcar_notify_ondownload', 0))
         BOXCAR_TOKEN = check_setting_str(CFG, 'Boxcar', 'boxcar_token', '')
 
-        USE_PUSHBULLET = bool(check_setting_int(CFG, 'Pushbullet', 'use_pushbullet',0))
+        USE_PUSHBULLET = bool(check_setting_int(CFG, 'Pushbullet', 'use_pushbullet', 0))
         PUSHBULLET_NOTIFY_ONSNATCH = bool(check_setting_int(CFG, 'Pushbullet', 'pushbullet_notify_onsnatch', 0))
         PUSHBULLET_NOTIFY_ONDOWNLOAD = bool(check_setting_int(CFG, 'Pushbullet', 'pushbullet_notify_ondownload', 0))
         PUSHBULLET_TOKEN = check_setting_str(CFG, 'Pushbullet', 'pushbullet_token', '')
         PUSHBULLET_DEVICEID = check_setting_str(CFG, 'Pushbullet', 'pushbullet_deviceid', '')
 
-        USE_PUSHOVER = bool(check_setting_int(CFG, 'Pushover', 'use_pushover',0))
-        PUSHOVER_ONSNATCH = bool(check_setting_int(CFG, 'Pushover', 'pushover_onsnatch',0))
-        PUSHOVER_ONDOWNLOAD = bool(check_setting_int(CFG, 'Pushover', 'pushover_ondownload',0))
-        PUSHOVER_KEYS = check_setting_str(CFG, 'Pushover', 'pushover_keys','')
-        PUSHOVER_APITOKEN =  check_setting_str(CFG, 'Pushover', 'pushover_apitoken','')
-        PUSHOVER_PRIORITY = check_setting_int(CFG, 'Pushover', 'pushover_priority',0)
+        USE_PUSHOVER = bool(check_setting_int(CFG, 'Pushover', 'use_pushover', 0))
+        PUSHOVER_ONSNATCH = bool(check_setting_int(CFG, 'Pushover', 'pushover_onsnatch', 0))
+        PUSHOVER_ONDOWNLOAD = bool(check_setting_int(CFG, 'Pushover', 'pushover_ondownload', 0))
+        PUSHOVER_KEYS = check_setting_str(CFG, 'Pushover', 'pushover_keys', '')
+        PUSHOVER_APITOKEN = check_setting_str(CFG, 'Pushover', 'pushover_apitoken', '')
+        PUSHOVER_PRIORITY = check_setting_int(CFG, 'Pushover', 'pushover_priority', 0)
 
         NMA_ENABLED = bool(check_setting_int(CFG, 'NMA', 'nma_enabled', 0))
         NMA_APIKEY = check_setting_str(CFG, 'NMA', 'nma_apikey', '')
@@ -498,7 +504,7 @@ def daemonize():
             sys.exit(0)
     except OSError, e:
         raise RuntimeError("1st fork failed: %s [%d]" %
-                   (e.strerror, e.errno))
+                           (e.strerror, e.errno))
 
     os.setsid() #@UndefinedVariable - only available in UNIX
 
@@ -513,7 +519,7 @@ def daemonize():
             sys.exit(0)
     except OSError, e:
         raise RuntimeError("2st fork failed: %s [%d]" %
-                   (e.strerror, e.errno))
+                           (e.strerror, e.errno))
 
     dev_null = file('/dev/null', 'r')
     os.dup2(dev_null.fileno(), sys.stdin.fileno())
@@ -555,7 +561,7 @@ def config_write():
 
     new_config['General']['imp_onlyisbn'] = int(IMP_ONLYISBN)
     new_config['General']['imp_preflang'] = IMP_PREFLANG
-    new_config['General']['imp_autoadd'] =  IMP_AUTOADD
+    new_config['General']['imp_autoadd'] = IMP_AUTOADD
 
     new_config['General']['ebook_type'] = EBOOK_TYPE
 
@@ -712,8 +718,8 @@ def config_write():
 
 def dbcheck():
 
-    conn=sqlite3.connect(DBFILE)
-    c=conn.cursor()
+    conn = sqlite3.connect(DBFILE)
+    c = conn.cursor()
     c.execute('CREATE TABLE IF NOT EXISTS authors (AuthorID TEXT, AuthorName TEXT UNIQUE, AuthorImg TEXT, AuthorLink TEXT, DateAdded TEXT, Status TEXT, LastBook TEXT, LastLink Text, LastDate TEXT, HaveBooks INTEGER, TotalBooks INTEGER, AuthorBorn TEXT, AuthorDeath TEXT, UnignoredBooks INTEGER)')
     c.execute('CREATE TABLE IF NOT EXISTS books (AuthorID TEXT, AuthorName TEXT, AuthorLink TEXT, BookName TEXT, BookSub TEXT, BookDesc TEXT, BookGenre TEXT, BookIsbn TEXT, BookPub TEXT, BookRate INTEGER, BookImg TEXT, BookPages INTEGER, BookLink TEXT, BookID TEXT UNIQUE, BookDate TEXT, BookLang TEXT, BookAdded TEXT, Status TEXT, Series TEXT, SeriesOrder INTEGER)')
     c.execute('CREATE TABLE IF NOT EXISTS wanted (BookID TEXT, NZBurl TEXT, NZBtitle TEXT, NZBdate TEXT, NZBprov TEXT, Status TEXT, NZBsize TEXT, AuxInfo TEXT)')
@@ -834,7 +840,7 @@ def start():
         SCHED.start()
 #        for job in SCHED.get_jobs():
 #            print job
-        started = True
+    started = True
 
 def shutdown(restart=False, update=False):
 
@@ -851,7 +857,7 @@ def shutdown(restart=False, update=False):
         except Exception, e:
             logger.warn('LazyLibrarian failed to update: %s. Restarting.' % e) 
 
-    if PIDFILE :
+    if PIDFILE:
         logger.info('Removing pidfile %s' % PIDFILE)
         os.remove(PIDFILE)
 

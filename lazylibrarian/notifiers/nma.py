@@ -1,8 +1,10 @@
 import lazylibrarian
-
-from lazylibrarian import logger, common
+from lazylibrarian import common
+from lazylibrarian import logger
+from lazylibrarian.common import NOTIFY_DOWNLOAD
+from lazylibrarian.common import NOTIFY_SNATCH
+from lazylibrarian.common import notifyStrings
 from lib.pynma import pynma
-from lazylibrarian.common import notifyStrings, NOTIFY_SNATCH, NOTIFY_DOWNLOAD
 
 
 class NMA_Notifier:

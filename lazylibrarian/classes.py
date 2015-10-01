@@ -18,9 +18,8 @@
 #########################################
 
 
-import urllib
-
 from common import USER_AGENT
+import urllib
 
 
 class LazyLibrarianURLopener(urllib.FancyURLopener):

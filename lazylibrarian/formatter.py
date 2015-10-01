@@ -1,7 +1,7 @@
-import time, datetime
-from time import strptime
-
+import datetime
 import lazylibrarian
+import time
+from time import strptime
 
 
 def now():
@@ -27,7 +27,7 @@ def nzbdate2format(nzbdate):
     day = nzbdate.split()[1]
     month = str(strptime(mmname, '%b').tm_mon).zfill(2)
     year = nzbdate.split()[3]
-    return year+'-'+month+'-'+day
+    return year + '-' + month + '-' + day
 
 def month2num(month):
     if month == "January":
@@ -88,9 +88,9 @@ def checked(variable):
 
 def is_valid_isbn(isbn):
     last = 10 if isbn[-1] in ["X", "x"] else int(isbn[-1])
-    weighted = [int(num)*weight for num, weight in
-              zip(isbn[:-1], reversed(range(2, 11)))]
-    return (sum(weighted) + last) %11==0
+    weighted = [int(num) * weight for num, weight in
+        zip(isbn[:-1], reversed(range(2, 11)))]
+    return (sum(weighted) + last) % 11 == 0
 
 def latinToAscii(unicrap):
     """

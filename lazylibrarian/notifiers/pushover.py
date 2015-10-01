@@ -18,22 +18,24 @@
 # along with LazyLibrarian.  If not, see <http://www.gnu.org/licenses/>.
 
 import base64
-import urllib
-import urllib2
-import time
+from httplib import HTTPException
+from httplib import HTTPSConnection
 import lazylibrarian
-import lazylibrarian.common as common
-
-from httplib import HTTPSConnection, HTTPException
-from urllib import urlencode
 from lazylibrarian import logger
-from lazylibrarian.common import notifyStrings, NOTIFY_SNATCH, NOTIFY_DOWNLOAD
+import lazylibrarian.common as common
+from lazylibrarian.common import NOTIFY_DOWNLOAD
+from lazylibrarian.common import NOTIFY_SNATCH
+from lazylibrarian.common import notifyStrings
+import time
+import urllib
+from urllib import urlencode
+import urllib2
 
 
 class PushoverNotifier:
 
     def _sendPushover(self, message=None, event=None, pushover_apitoken=None, pushover_keys=None, 
-                        notificationType=None, method=None, force=False):
+                      notificationType = None, method = None, force = False):
 
         if not lazylibrarian.USE_PUSHOVER and not force:
             return False
@@ -73,9 +75,9 @@ class PushoverNotifier:
                     'message': message.encode("utf-8"),
                     'priority': lazylibrarian.PUSHOVER_PRIORITY}
                 http_handler.request("POST",
-                                "/1/messages.json",
-                                headers={'Content-type': "application/x-www-form-urlencoded"},
-                                body=urlencode(data))
+                                     "/1/messages.json",
+                                     headers = {'Content-type': "application/x-www-form-urlencoded"},
+                                     body = urlencode(data))
                 pass
             except Exception, e:
                 logger.error(str(e))
@@ -100,7 +102,7 @@ class PushoverNotifier:
             return False
 
     def _notify(self, message=None, event=None, pushover_apitoken=None, pushover_keys=None, 
-                notificationType=None, method=None, force=False):
+                notificationType = None, method = None, force = False):
         """
         Sends a pushover notification based on the provided info or LL config
 
@@ -119,7 +121,7 @@ class PushoverNotifier:
 
         logger.debug("Pushover: Sending notification for " + str(message))
 
-        self._sendPushover(message,event,pushover_apitoken,pushover_keys,notificationType,method)
+        self._sendPushover(message, event, pushover_apitoken, pushover_keys, notificationType, method)
         return True
 
 ##############################################################################
@@ -132,7 +134,7 @@ class PushoverNotifier:
 
     def notify_download(self, title):
         if lazylibrarian.PUSHOVER_ONDOWNLOAD:
-            self._notify( message=title, event=notifyStrings[NOTIFY_DOWNLOAD], notificationType='note', method='POST')
+            self._notify(message=title, event=notifyStrings[NOTIFY_DOWNLOAD], notificationType='note', method='POST')
 
     def test_notify(self, apitoken, title="Test"):
         return self._sendPushover("This is a test notification from LazyLibrarian", title, apitoken)
