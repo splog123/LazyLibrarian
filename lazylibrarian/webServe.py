@@ -12,19 +12,19 @@ from lazylibrarian import postprocess
 from lazylibrarian.formatter import checked
 from lazylibrarian.gb import GoogleBooks
 from lazylibrarian.gr import GoodReads
-#from lazylibrarian.searchmag import searchmagazines
+from lazylibrarian.searchmag import searchmagazines
 from lazylibrarian.searchnzb import search_nzb_book
 from lazylibrarian.searchtorrents import search_tor_book
 import lib.simplejson as simplejson
 from mako import exceptions
 from mako.lookup import TemplateLookup
-#from mako.template import Template
+from mako.template import Template
 from operator import itemgetter
 import os
-#import thread
+import thread
 import threading
-#import time
-#import urllib
+import time
+import urllib
 
 
 def serve_template(templatename, ** kwargs):

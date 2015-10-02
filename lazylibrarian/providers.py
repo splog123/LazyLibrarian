@@ -3,9 +3,9 @@ from lazylibrarian import SimpleCache
 from lazylibrarian import logger
 import lazylibrarian.common as common
 import lib.feedparser as feedparser
-#import re
-#import threading
-#import time
+import re
+import threading
+import time
 import urllib
 import urllib2
 import urlparse

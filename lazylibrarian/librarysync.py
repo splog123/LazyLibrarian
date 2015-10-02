@@ -1,4 +1,4 @@
-#import glob
+import glob
 import lazylibrarian
 from lazylibrarian import database
 from lazylibrarian import importer

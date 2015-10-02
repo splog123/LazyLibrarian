@@ -1,4 +1,4 @@
-#import lazylibrarian
+import lazylibrarian
 from lazylibrarian import database
 from lazylibrarian import importer
 from lazylibrarian import logger

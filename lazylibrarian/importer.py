@@ -4,9 +4,9 @@ from lazylibrarian import formatter
 from lazylibrarian import logger
 from lazylibrarian.gb import GoogleBooks
 from lazylibrarian.gr import GoodReads
-#import os
-#import threading
-#import time
+import os
+import threading
+import time
 
 
 def addAuthorToDB(authorname=None, refresh=False):

@@ -22,7 +22,7 @@ from lazylibrarian import logger
 from lazylibrarian.common import NOTIFY_DOWNLOAD
 from lazylibrarian.common import NOTIFY_SNATCH
 from lazylibrarian.common import notifyStrings
-#import time
+import time
 import urllib
 import urllib2
 #from lazylibrarian.exceptions import ex
