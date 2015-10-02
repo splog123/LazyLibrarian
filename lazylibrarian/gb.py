@@ -12,7 +12,9 @@ from lazylibrarian.gr import GoodReads
 import lib.fuzzywuzzy as fuzzywuzzy
 from lib.fuzzywuzzy import fuzz, process
 
+
 class GoogleBooks:
+
 
     def __init__(self, name=None, type=None):
         self.name = name
@@ -168,9 +170,9 @@ class GoogleBooks:
                             isbn_fuzz = int(0)
                         highest_fuzz = max(author_fuzz, book_fuzz, isbn_fuzz)
 
-#  Darkie67:
-#        replacing German Umlauts and filtering out ":"
-#
+                        #  Darkie67:
+                        #        replacing German Umlauts and filtering out ":"
+                        #
                         booknamealt = item['volumeInfo']['title']
                         booknametmp1=booknamealt.replace(u'\xf6',u'oe')
                         booknametmp2=booknametmp1.replace(u'\xe4',u'ae')
@@ -180,7 +182,7 @@ class GoogleBooks:
                         booknametmp6=booknametmp5.replace(u'\xd6',u'Oe')
                         booknametmp7=booknametmp6.replace(':','')  
                         bookname=booknametmp7.replace(u'\xfc',u'ue')
-# Darkie67 end                        
+                        # Darkie67 end                        
                         resultlist.append({
                             'authorname': Author,
                             'bookid': item['id'],
@@ -219,6 +221,7 @@ class GoogleBooks:
 
         logger.info('The Google Books API was hit %s times for keyword %s' % (str(api_hits), self.name))
         queue.put(resultlist)
+
 
     def get_author_books(self, authorid=None, authorname=None, refresh=False):
         books_dict=[]
@@ -337,9 +340,9 @@ class GoogleBooks:
                         bookisbn = None
 
                     bookid = item['id']
-#  Darkie67:
-#        replacing German Umlauts and filtering out ":"
-#
+                    #  Darkie67:
+                    #        replacing German Umlauts and filtering out ":"
+                    #
                     booknamealt = item['volumeInfo']['title']
                     booknametmp1=booknamealt.replace(u'\xf6',u'oe')
                     booknametmp2=booknametmp1.replace(u'\xe4',u'ae')
@@ -349,7 +352,7 @@ class GoogleBooks:
                     booknametmp6=booknametmp5.replace(u'\xd6',u'Oe')
                     booknametmp7=booknametmp6.replace(':','')
                     bookname=booknametmp7.replace(u'\xfc',u'ue')
-# Darkie67 end
+                    # Darkie67 end
                     booklink = item['volumeInfo']['canonicalVolumeLink']
                     bookrate = float(bookrate)
 
@@ -359,7 +362,6 @@ class GoogleBooks:
                             book_status = resulted['Status']
                     else:
                         book_status = "Skipped"
-
 
                     if not (re.match('[^\w-]', bookname)): #remove books with bad caracters in title
                         if book_status != "Ignored":
@@ -424,7 +426,6 @@ class GoogleBooks:
                 "LastDate": lastbook['BookDate']
                 }
         myDB.upsert("authors", newValueDict, controlValueDict)
-
                    
         logger.debug("Found %s total books for author" % total_count)
         logger.debug("Removed %s bad language results for author" % ignored)
@@ -446,9 +447,9 @@ class GoogleBooks:
         URL = 'https://www.googleapis.com/books/v1/volumes/' + str(bookid) + "?key="+lazylibrarian.GB_API
         jsonresults = json.JSONDecoder().decode(urllib2.urlopen(URL, timeout=30).read())
 
-#  Darkie67:
-#        replacing German Umlauts and filtering out ":"
-#
+        #  Darkie67:
+        #        replacing German Umlauts and filtering out ":"
+        #
         booknamealt = jsonresults['volumeInfo']['title']
         booknametmp1=booknamealt.replace(u'\xf6',u'oe')
         booknametmp2=booknametmp1.replace(u'\xe4',u'ae')
@@ -458,7 +459,7 @@ class GoogleBooks:
         booknametmp6=booknametmp5.replace(u'\xd6',u'Oe')
         booknametmp7=booknametmp6.replace(':','')
         bookname=booknametmp7.replace(u'\xfc',u'ue')
-# Darkie67 end        
+        # Darkie67 end        
         
         try:
             authorname = jsonresults['volumeInfo']['authors'][0]
