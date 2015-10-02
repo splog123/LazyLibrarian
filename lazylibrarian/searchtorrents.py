@@ -10,26 +10,26 @@ from lazylibrarian import formatter
 from lazylibrarian import logger
 from lazylibrarian import notifiers
 from lazylibrarian import providers
-from lazylibrarian import searchmag
+#from lazylibrarian import searchmag
 from lazylibrarian import transmission
 from lazylibrarian import utorrent
 import lazylibrarian.common as common
 from lib.bencode import bdecode
 from lib.bencode import bencode as bencode
 from lib.deluge_client import DelugeRPCClient
-import lib.fuzzywuzzy as fuzzywuzzy
+#import lib.fuzzywuzzy as fuzzywuzzy
 from lib.fuzzywuzzy import fuzz
-from lib.fuzzywuzzy import process
+#from lib.fuzzywuzzy import process
 import os
 import re
-import sys
+#import sys
 import threading
-import time
-import urllib
+#import time
+#import urllib
 import urllib2
-from xml.etree import ElementTree
-from xml.etree.ElementTree import Element
-from xml.etree.ElementTree import SubElement
+#from xml.etree import ElementTree
+#from xml.etree.ElementTree import Element
+#from xml.etree.ElementTree import SubElement
 
 
 def search_tor_book(books=None, mags=None):

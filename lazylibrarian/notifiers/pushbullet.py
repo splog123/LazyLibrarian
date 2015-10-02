@@ -25,10 +25,10 @@ from lazylibrarian import logger
 from lazylibrarian.common import NOTIFY_DOWNLOAD
 from lazylibrarian.common import NOTIFY_SNATCH
 from lazylibrarian.common import notifyStrings
-import time
-import urllib
+#import time
+#import urllib
 from urllib import urlencode
-import urllib2
+#import urllib2
 
 
 class PushbulletNotifier(object):

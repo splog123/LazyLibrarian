@@ -1,5 +1,5 @@
-from StringIO import StringIO
-import gzip
+#from StringIO import StringIO
+#import gzip
 import lazylibrarian
 from lazylibrarian import SimpleCache
 from lazylibrarian import classes
@@ -12,19 +12,19 @@ from lazylibrarian import providers
 from lazylibrarian import sabnzbd
 from lazylibrarian import searchmag
 from lazylibrarian.common import USER_AGENT
-import lib.fuzzywuzzy as fuzzywuzzy
+#import lib.fuzzywuzzy as fuzzywuzzy
 from lib.fuzzywuzzy import fuzz
-from lib.fuzzywuzzy import process
+#from lib.fuzzywuzzy import process
 import os
 import re
 import request
 import threading
-import time
-import urllib
+#import time
+#import urllib
 import urllib2
-from xml.etree import ElementTree
-from xml.etree.ElementTree import Element
-from xml.etree.ElementTree import SubElement
+#from xml.etree import ElementTree
+#from xml.etree.ElementTree import Element
+#from xml.etree.ElementTree import SubElement
 
 
 def search_nzb_book(books=None, mags=None):

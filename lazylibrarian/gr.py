@@ -1,23 +1,23 @@
-import Queue
+#import Queue
 import lazylibrarian
 from lazylibrarian import SimpleCache
 from lazylibrarian import database
 from lazylibrarian import formatter
 from lazylibrarian import logger
 from lazylibrarian.common import USER_AGENT
-import lib.fuzzywuzzy as fuzzywuzzy
+#import lib.fuzzywuzzy as fuzzywuzzy
 from lib.fuzzywuzzy import fuzz
-from lib.fuzzywuzzy import process
+#from lib.fuzzywuzzy import process
 import re
-import sys
-import thread
+#import sys
+#import thread
 import threading
 import time
 import urllib
 import urllib2
 from xml.etree import ElementTree
-from xml.etree.ElementTree import Element
-from xml.etree.ElementTree import SubElement
+#from xml.etree.ElementTree import Element
+#from xml.etree.ElementTree import SubElement
 
 
 class GoodReads:

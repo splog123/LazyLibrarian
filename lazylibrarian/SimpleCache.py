@@ -1,14 +1,14 @@
 import warnings
 warnings.simplefilter("ignore", DeprecationWarning)
-import sys
+#import sys
 import time
-import re
+#import re
 import os
 import urllib2
 import httplib
-import unittest
-import md5
-import hashlib
+#import unittest
+#import md5
+#import hashlib
 import StringIO
 import lazylibrarian
 

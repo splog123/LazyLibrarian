@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with LazyLibrarian.  If not, see <http://www.gnu.org/licenses/>.
 
-import base64
+#import base64
 from httplib import HTTPException
 from httplib import HTTPSConnection
 import lazylibrarian
@@ -26,10 +26,10 @@ import lazylibrarian.common as common
 from lazylibrarian.common import NOTIFY_DOWNLOAD
 from lazylibrarian.common import NOTIFY_SNATCH
 from lazylibrarian.common import notifyStrings
-import time
-import urllib
+#import time
+#import urllib
 from urllib import urlencode
-import urllib2
+#import urllib2
 
 
 class PushoverNotifier(object):

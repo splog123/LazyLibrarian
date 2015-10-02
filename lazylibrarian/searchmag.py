@@ -1,23 +1,23 @@
 import lazylibrarian
-from lazylibrarian import SimpleCache
+#from lazylibrarian import SimpleCache
 from lazylibrarian import database
 from lazylibrarian import formatter
 from lazylibrarian import logger
-from lazylibrarian import notifiers
+#from lazylibrarian import notifiers
 from lazylibrarian import providers
-from lazylibrarian import sabnzbd
-import lib.fuzzywuzzy as fuzzywuzzy
-from lib.fuzzywuzzy import fuzz
-from lib.fuzzywuzzy import process
-import os
+#from lazylibrarian import sabnzbd
+#import lib.fuzzywuzzy as fuzzywuzzy
+#from lib.fuzzywuzzy import fuzz
+#from lib.fuzzywuzzy import process
+#import os
 import re
 import threading
-import time
-import urllib
-import urllib2
-from xml.etree import ElementTree
-from xml.etree.ElementTree import Element
-from xml.etree.ElementTree import SubElement
+#import time
+#import urllib
+#import urllib2
+#from xml.etree import ElementTree
+#from xml.etree.ElementTree import Element
+#from xml.etree.ElementTree import SubElement
 
 
 def searchmagazines(mags=None):
