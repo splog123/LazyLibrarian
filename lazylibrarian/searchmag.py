@@ -214,5 +214,5 @@ def searchmagazines(mags=None):
                         logger.debug('NZB [%s] does not completely match search term [%s].' % (nzbtitle, bookid))
                         bad_regex = bad_regex + 1
 
-           logger.info('Found %s NZBs for %s.  %s are new, %s are old, and %s have bad date formatting' % (total_nzbs, bookid, new_date, old_date, bad_regex) )
+            logger.info('Found %s NZBs for %s.  %s are new, %s are old, and %s have bad date formatting' % (total_nzbs, bookid, new_date, old_date, bad_regex) )
     return maglist
