@@ -1,9 +1,8 @@
 # example
 # https://www.googleapis.com/books/v1/volumes?q=+inauthor:george+martin+intitle:song+ice+fire
 
-import urllib, urllib2, json, time, sys, re
+import json, time, sys, re
 import thread, threading, time, Queue
-from urllib2 import HTTPError
 
 import lazylibrarian
 from lazylibrarian import logger, formatter, database, SimpleCache
@@ -12,6 +11,7 @@ from lazylibrarian.gr import GoodReads
 import lib.fuzzywuzzy as fuzzywuzzy
 from lib.fuzzywuzzy import fuzz, process
 
+import lib.requests as requests
 
 class GoogleBooks:
 
@@ -19,7 +19,8 @@ class GoogleBooks:
     def __init__(self, name=None, type=None):
         self.name = name
         self.type = type
-        self.url = 'https://www.googleapis.com/books/v1/volumes?q='
+        self.url = 'https://www.googleapis.com/books/v1/volumes'
+        self.timeout = 30
         self.params = {
             'maxResults': 40,
             'printType': 'books',
@@ -28,193 +29,169 @@ class GoogleBooks:
 
 
     def find_results(self, authorname=None, queue=None):
+
         threading.currentThread().name = "GB-SEARCH"
         resultlist = []
         #See if we should check ISBN field, otherwise ignore it
         try:
             isbn_check = int(authorname[:-1])
             if (len(str(isbn_check)) == 9) or (len(str(isbn_check)) == 12):
-                api_strings = ['isbn:']
+                api_strings = ['isbn']
             else:
-                api_strings = ['inauthor:', 'intitle:']
+                api_strings = ['inauthor', 'intitle']
         except:
-            api_strings = ['inauthor:', 'intitle:']
+            api_strings = ['inauthor', 'intitle']
 
         api_hits = 0
         logger.info('Now searching Google Books API with keyword: ' + self.name)
 
         for api_value in api_strings:
-            startindex = 0
-            if api_value == "isbn:":
-                set_url = self.url + urllib.quote(api_value + self.name)
-            else:
-                set_url = self.url + urllib.quote(api_value + '"' + self.name + '"')
-
+            self.params['q'] = api_value + ":" + self.name
+            self.params['startIndex'] = 0
+            self.params['maxResults'] = 20
+            resultcount = 0
+            removedResults = 0
+            ignored = 0
+            total_count = 0
+            no_author_count = 0
+                
             try:
-                startindex = 0
-                resultcount = 0
-                removedResults = 0
-                ignored = 0
+                try:
+                    r = requests.get(self.url, params=self.params, timeout=self.timeout)
+                except ConnectionError:
+                    #TODO Needs more work, can be many types of error
+                    logger.warn('Google Books API Error [%s]: Check your API key or wait a while' % ConnectionError.msg)
+                    break
+                jsonresults = r.json()
+                api_hits = api_hits + 1
+                number_results = jsonresults['totalItems']
+                logger.debug('Searching url: ' + r.url)
+                if number_results == 0:
+                    logger.info('Found no results for %s with value: %s' % (api_value, self.name))
+                    break
+                else:
+                    pass
 
-                total_count = 0
-                no_author_count = 0
-                while True:
+                for item in jsonresults['items']:
 
-                    self.params['startIndex'] = startindex
-                    URL = set_url + '&' + urllib.urlencode(self.params)
+                    total_count = total_count + 1
+
+                    # skip if no author, no author is no book.
+                    try:
+                        Author = item['volumeInfo']['authors'][0]
+                    except KeyError:
+                        logger.debug('Skipped a result without authorfield.')
+                        no_author_count = no_author_count + 1
+                        continue
 
                     try:
-                        jsonresults = json.JSONDecoder().decode(urllib2.urlopen(URL, timeout=30).read())
-                        api_hits = api_hits + 1
-                        number_results = jsonresults['totalItems']
-                        logger.debug('Searching url: ' + URL)
-                        if number_results == 0:
-                            logger.info('Found no results for %s with value: %s' % (api_value, self.name))
-                            break
-                        else:
-                            pass
-                    except HTTPError, err:
-                        logger.warn('Google Books API Error [%s]: Check your API key or wait a while' % err.msg)
-                        break
-
-                    startindex = startindex+40
-
-                    for item in jsonresults['items']:
-
-                        total_count = total_count + 1
-
-                        # skip if no author, no author is no book.
-                        try:
-                            Author = item['volumeInfo']['authors'][0]
-                        except KeyError:
-                            logger.debug('Skipped a result without authorfield.')
-                            no_author_count = no_author_count + 1
+                        #skip if language is in ignore list
+                        booklang = item['volumeInfo']['language']
+                        valid_langs = ([valid_lang.strip() for valid_lang in lazylibrarian.IMP_PREFLANG.split(',')])
+                        if booklang not in valid_langs:
+                            logger.debug('Skipped a book with language %s' % booklang)
+                            ignored = ignored + 1
                             continue
-
-                        try:
-                            #skip if language is in ignore list
-                            booklang = item['volumeInfo']['language']
-                            valid_langs = ([valid_lang.strip() for valid_lang in lazylibrarian.IMP_PREFLANG.split(',')])
-                            if booklang not in valid_langs:
-                                logger.debug('Skipped a book with language %s' % booklang)
-                                ignored = ignored + 1
-                                continue
-                        except KeyError:
-                            ignored = ignored+1
-                            logger.debug('Skipped a result where no language is found')
-                            continue
-
-                        try:
-                            bookpub = item['volumeInfo']['publisher']
-                        except KeyError:
-                            bookpub = None
-
-                        try:
-                            booksub = item['volumeInfo']['subtitle']
-                        except KeyError:
-                            booksub = None
-
-                        try:
-                            bookdate = item['volumeInfo']['publishedDate']
-                        except KeyError:
-                            bookdate = '0000-00-00'
-                        bookdate = bookdate[:4]
-
-                        try:
-                            bookimg = item['volumeInfo']['imageLinks']['thumbnail']
-                        except KeyError:
-                            bookimg = 'images/nocover.png'
-
-                        try:
-                            bookrate = item['volumeInfo']['averageRating']
-                        except KeyError:
-                            bookrate = 0
-
-                        try:
-                            bookpages = item['volumeInfo']['pageCount']
-                        except KeyError:
-                            bookpages = '0'
-
-                        try:
-                            bookgenre = item['volumeInfo']['categories'][0]
-                        except KeyError:
-                            bookgenre = None
-
-                        try:
-                            bookdesc = item['volumeInfo']['description']
-                        except KeyError:
-                            bookdesc = 'Not available'
-
-                        try:
-                            num_reviews = item['volumeInfo']['ratingsCount']
-                        except KeyError:
-                            num_reviews = 0
-
-                        try:
-                            if item['volumeInfo']['industryIdentifiers'][0]['type'] == 'ISBN_10':
-                                bookisbn = item['volumeInfo']['industryIdentifiers'][0]['identifier']
-                            else:
-                                bookisbn = 0
-                        except KeyError:
-                            bookisbn = 0
-
-                        author_fuzz = fuzz.ratio(Author.lower(), authorname.lower())
-                        book_fuzz = fuzz.ratio(item['volumeInfo']['title'].lower(), authorname.lower())
-                        try:
-                            isbn_check = int(authorname[:-1])
-                            if (len(str(isbn_check)) == 9) or (len(str(isbn_check)) == 12):
-                                isbn_fuzz = int(100)
-                            else:
-                                isbn_fuzz = int(0)
-                        except:
-                            isbn_fuzz = int(0)
-                        highest_fuzz = max(author_fuzz, book_fuzz, isbn_fuzz)
-
-                        #  Darkie67:
-                        #        replacing German Umlauts and filtering out ":"
-                        #
-                        booknamealt = item['volumeInfo']['title']
-                        booknametmp1=booknamealt.replace(u'\xf6',u'oe')
-                        booknametmp2=booknametmp1.replace(u'\xe4',u'ae')
-                        booknametmp3=booknametmp2.replace(u'\xdf',u'ss')
-                        booknametmp4=booknametmp3.replace(u'\xc4',u'Ae')
-                        booknametmp5=booknametmp4.replace(u'\xdc',u'Ue')
-                        booknametmp6=booknametmp5.replace(u'\xd6',u'Oe')
-                        booknametmp7=booknametmp6.replace(':','')  
-                        bookname=booknametmp7.replace(u'\xfc',u'ue')
-                        # Darkie67 end                        
-                        resultlist.append({
-                            'authorname': Author,
-                            'bookid': item['id'],
-                            'bookname': bookname,
-                            'booksub': booksub,
-                            'bookisbn': bookisbn,
-                            'bookpub': bookpub,
-                            'bookdate': bookdate,
-                            'booklang': booklang,
-                            'booklink': item['volumeInfo']['canonicalVolumeLink'],
-                            'bookrate': float(bookrate),
-                            'bookimg': bookimg,
-                            'bookpages': bookpages,
-                            'bookgenre': bookgenre,
-                            'bookdesc': bookdesc,
-                            'author_fuzz': author_fuzz,
-                            'book_fuzz': book_fuzz,
-                            'isbn_fuzz': isbn_fuzz,
-                            'highest_fuzz': highest_fuzz,
-                            'num_reviews': num_reviews
-                            })
-
-                        resultcount = resultcount+1
-
-                    if startindex >= number_results:
-                        logger.debug("Found %s total results" % total_count)
-                        logger.debug("Removed %s bad language results" % ignored)
-                        logger.debug("Removed %s books with no author" % no_author_count)
-                        logger.info("Showing %s results for (%s) with keyword: %s" % (resultcount, api_value, authorname))
-                        break
-                    else:
+                    except KeyError:
+                        ignored = ignored+1
+                        logger.debug('Skipped a result where no language is found')
                         continue
+
+                    try:
+                        bookpub = item['volumeInfo']['publisher']
+                    except KeyError:
+                        bookpub = None
+
+                    try:
+                        booksub = item['volumeInfo']['subtitle']
+                    except KeyError:
+                        booksub = None
+
+                    try:
+                        bookdate = item['volumeInfo']['publishedDate']
+                    except KeyError:
+                        bookdate = '0000-00-00'
+                    bookdate = bookdate[:4]
+
+                    try:
+                        bookimg = item['volumeInfo']['imageLinks']['thumbnail']
+                    except KeyError:
+                        bookimg = 'images/nocover.png'
+
+                    try:
+                        bookrate = item['volumeInfo']['averageRating']
+                    except KeyError:
+                        bookrate = 0
+
+                    try:
+                        bookpages = item['volumeInfo']['pageCount']
+                    except KeyError:
+                        bookpages = '0'
+
+                    try:
+                        bookgenre = item['volumeInfo']['categories'][0]
+                    except KeyError:
+                        bookgenre = None
+
+                    try:
+                        bookdesc = item['volumeInfo']['description']
+                    except KeyError:
+                        bookdesc = 'Not available'
+
+                    try:
+                        num_reviews = item['volumeInfo']['ratingsCount']
+                    except KeyError:
+                        num_reviews = 0
+
+                    try:
+                        if item['volumeInfo']['industryIdentifiers'][0]['type'] == 'ISBN_10':
+                            bookisbn = item['volumeInfo']['industryIdentifiers'][0]['identifier']
+                        else:
+                            bookisbn = 0
+                    except KeyError:
+                        bookisbn = 0
+
+                    author_fuzz = fuzz.ratio(Author.lower(), authorname.lower())
+                    book_fuzz = fuzz.ratio(item['volumeInfo']['title'].lower(), authorname.lower())
+                    try:
+                        isbn_check = int(authorname[:-1])
+                        if (len(str(isbn_check)) == 9) or (len(str(isbn_check)) == 12):
+                            isbn_fuzz = int(100)
+                        else:
+                            isbn_fuzz = int(0)
+                    except:
+                        isbn_fuzz = int(0)
+                    highest_fuzz = max(author_fuzz, book_fuzz, isbn_fuzz)
+
+                    bookname = item['volumeInfo']['title']
+
+                    resultlist.append({
+                        'authorname': Author,
+                        'bookid': item['id'],
+                        'bookname': bookname,
+                        'booksub': booksub,
+                        'bookisbn': bookisbn,
+                        'bookpub': bookpub,
+                        'bookdate': bookdate,
+                        'booklang': booklang,
+                        'booklink': item['volumeInfo']['canonicalVolumeLink'],
+                        'bookrate': float(bookrate),
+                        'bookimg': bookimg,
+                        'bookpages': bookpages,
+                        'bookgenre': bookgenre,
+                        'bookdesc': bookdesc,
+                        'author_fuzz': author_fuzz,
+                        'book_fuzz': book_fuzz,
+                        'isbn_fuzz': isbn_fuzz,
+                        'highest_fuzz': highest_fuzz,
+                        'num_reviews': num_reviews
+                    })
+                    resultcount = resultcount+1
+
+                    logger.debug("Found %s total results" % total_count)
+                    logger.debug("Removed %s bad language results" % ignored)
+                    logger.debug("Removed %s books with no author" % no_author_count)
+                    logger.info("Showing %s results for (%s) with keyword: %s" % (resultcount, api_value, authorname))
 
             except KeyError:
                 break
@@ -224,13 +201,20 @@ class GoogleBooks:
 
 
     def get_author_books(self, authorid=None, authorname=None, refresh=False):
+
         books_dict=[]
-        set_url = self.url + urllib.quote('inauthor:' + '"' + authorname + '"')
-        URL = set_url + '&' + urllib.urlencode(self.params)
-
+        self.params['q'] = "inauthor" + ":" + authorname
+        self.params['startIndex'] = 0
         api_hits = 0
-        logger.info('[%s] Now processing books with Google Books API' % authorname)
+        resultcount = 0
+        removedResults = 0
+        ignored = 0
+        added_count = 0
+        updated_count = 0
+        book_ignore_count = 0
+        total_count = 0
 
+        logger.info('[%s] Now processing books with Google Books API' % authorname)
         #Artist is loading
         myDB = database.DBConnection()
         controlValueDict = {"AuthorID": authorid}
@@ -238,35 +222,23 @@ class GoogleBooks:
         myDB.upsert("authors", newValueDict, controlValueDict)
 
         try:
-            startindex = 0
-            resultcount = 0
-            removedResults = 0
-            ignored = 0
-            added_count = 0
-            updated_count = 0
-            book_ignore_count = 0
-            total_count = 0
-
             while True:
 
-                self.params['startIndex'] = startindex
-                URL = set_url + '&' + urllib.urlencode(self.params)
-
                 try:
-                    jsonresults = json.JSONDecoder().decode(urllib2.urlopen(URL, timeout=30).read())
-                    api_hits = api_hits + 1
-                    number_results = jsonresults['totalItems']
-                    logger.debug('[%s] Searching url: %s' % (authorname, URL))
-                    if number_results == 0:
-                        logger.info('Found no results for %s with value: %s' % (api_value, self.name))
-                        break
-                    else:
-                        pass
-                except HTTPError, err:
-                    logger.Error('Google API returned HTTP Error - probably time/rate limiting - [%s]' % err.msg)
+                    r = requests.get(self.url, params=self.params, timeout=self.timeout)
+                except ConnectionError:
+                    #TODO Needs more work, can be many types of error
+                    logger.Error('Google API returned Error [%s] - probably time/rate limiting' % ConnectionError.msg)
+                jsonresults = r.json()
+                api_hits = api_hits + 1
+                number_results = jsonresults['totalItems']
+                logger.debug('[%s] Searching url: %s' % (authorname, r.url))
+                if number_results == 0:
+                    logger.info('Found no results for %s with value: %s' % (api_value, self.name))
+                    break
+                else:
+                    pass
                     
-                startindex = startindex+40
-
                 for item in jsonresults['items']:
 
                     total_count = total_count + 1
@@ -340,19 +312,7 @@ class GoogleBooks:
                         bookisbn = None
 
                     bookid = item['id']
-                    #  Darkie67:
-                    #        replacing German Umlauts and filtering out ":"
-                    #
-                    booknamealt = item['volumeInfo']['title']
-                    booknametmp1=booknamealt.replace(u'\xf6',u'oe')
-                    booknametmp2=booknametmp1.replace(u'\xe4',u'ae')
-                    booknametmp3=booknametmp2.replace(u'\xdf',u'ss')
-                    booknametmp4=booknametmp3.replace(u'\xc4',u'Ae')
-                    booknametmp5=booknametmp4.replace(u'\xdc',u'Ue')
-                    booknametmp6=booknametmp5.replace(u'\xd6',u'Oe')
-                    booknametmp7=booknametmp6.replace(':','')
-                    bookname=booknametmp7.replace(u'\xfc',u'ue')
-                    # Darkie67 end
+                    bookname = item['volumeInfo']['title']
                     booklink = item['volumeInfo']['canonicalVolumeLink']
                     bookrate = float(bookrate)
 
@@ -402,10 +362,12 @@ class GoogleBooks:
                     else:
                         removedResults = removedResults + 1
 
-                    if startindex >= number_results:
-                        break
-                    else:
-                        continue
+                self.params['startIndex'] = (self.params['startIndex'] +
+                                             self.params['maxResults'])
+                if self.params['startIndex'] >= number_results:
+                    break
+                else:
+                    continue
 
         except KeyError:
             pass
@@ -424,7 +386,7 @@ class GoogleBooks:
                 "LastBook": lastbook['BookName'],
                 "LastLink": lastbook['BookLink'],
                 "LastDate": lastbook['BookDate']
-                }
+        }
         myDB.upsert("authors", newValueDict, controlValueDict)
                    
         logger.debug("Found %s total books for author" % total_count)
@@ -444,22 +406,15 @@ class GoogleBooks:
         threading.currentThread().name = "GB-ADD-BOOK"
         myDB = database.DBConnection()
 
-        URL = 'https://www.googleapis.com/books/v1/volumes/' + str(bookid) + "?key="+lazylibrarian.GB_API
-        jsonresults = json.JSONDecoder().decode(urllib2.urlopen(URL, timeout=30).read())
+        try:
+            r = requests.get(self.url + "/" + str(bookid), params=self.params, timeout=self.timeout)
+        except ConnectionError:
+            #TODO Needs more work, can be many types of error
+            logger.warn('Google Books API Error [%s]: Check your API key or wait a while' % ConnectionError.msg)
+            return
+        jsonresults = r.json()
 
-        #  Darkie67:
-        #        replacing German Umlauts and filtering out ":"
-        #
-        booknamealt = jsonresults['volumeInfo']['title']
-        booknametmp1=booknamealt.replace(u'\xf6',u'oe')
-        booknametmp2=booknametmp1.replace(u'\xe4',u'ae')
-        booknametmp3=booknametmp2.replace(u'\xdf',u'ss')
-        booknametmp4=booknametmp3.replace(u'\xc4',u'Ae')
-        booknametmp5=booknametmp4.replace(u'\xdc',u'Ue')
-        booknametmp6=booknametmp5.replace(u'\xd6',u'Oe')
-        booknametmp7=booknametmp6.replace(':','')
-        bookname=booknametmp7.replace(u'\xfc',u'ue')
-        # Darkie67 end        
+        bookname = jsonresults['volumeInfo']['title']
         
         try:
             authorname = jsonresults['volumeInfo']['authors'][0]
@@ -551,8 +506,7 @@ class GoogleBooks:
             "BookLang":     booklang,
             "Status":       "Wanted",
             "BookAdded":    formatter.today()
-            }
+        }
 
         myDB.upsert("books", newValueDict, controlValueDict)
         logger.info("%s added to the books database" % bookname)
-
