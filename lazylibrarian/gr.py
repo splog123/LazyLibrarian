@@ -1,4 +1,4 @@
-import urllib, urllib2, sys, re
+import sys, re
 import thread, threading, time, Queue
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element, SubElement
@@ -11,45 +11,49 @@ from lazylibrarian.common import USER_AGENT
 import lib.fuzzywuzzy as fuzzywuzzy
 from lib.fuzzywuzzy import fuzz, process
 
+import lib.requests as requests
+
 import time
 
 
 class GoodReads:
-    # http://www.goodreads.com/api/
+    """Fetch book and author metadata from Goodreads.Element
+    
+    FIXME: The usrlib2 code had a caching function using SimpleCache.
+    Put this back in using one of several cache plugins for Requests
+    """
 
 
     def __init__(self, name=None):
         self.name = name.encode('utf-8')
         #self.type = type
-        self.params = {"key":  lazylibrarian.GR_API}
+        self.url = 'http://www.goodreads.com'
+        self.timeout = 30
+        self.params = {
+            'key':  lazylibrarian.GR_API
+        }
 
 
     def find_results(self, authorname=None, queue=None):
         threading.currentThread().name = "GR-SEARCH"
         resultlist = []
         api_hits = 0
-        url = urllib.quote_plus(authorname.encode('utf-8'))
-        set_url = 'http://www.goodreads.com/search.xml?q=' + url + '&' + urllib.urlencode(self.params)
+        url = self.url + '/search.xml'
+        self.params['q'] = authorname
         logger.info('Now searching GoodReads API with keyword: ' + authorname)
-        logger.debug('Searching for %s at: %s' % (authorname, set_url))
 
         try:
-
             try:
-                # Cache our request
-                request = urllib2.Request(set_url)
-                if lazylibrarian.PROXY_HOST:
-                    request.set_proxy(lazylibrarian.PROXY_HOST, lazylibrarian.PROXY_TYPE)
-                request.add_header('User-Agent', USER_AGENT)
-                opener = urllib2.build_opener(SimpleCache.CacheHandler(".AuthorCache"), SimpleCache.ThrottlingProcessor(5))
-                resp = opener.open(request)
-                api_hits = api_hits + 1
-                sourcexml = ElementTree.parse(resp)
+                r = requests.get(url, params=self.params, timeout=self.timeout)
             except Exception, e:
                 logger.error("Error finding results: " + str(e))
-
-            rootxml = sourcexml.getroot()
-            resultxml = rootxml.getiterator('work')
+            api_hits = api_hits + 1
+            logger.debug('Searching for %s at: %s' % (authorname, r.url))
+            try:
+                rootxml = ElementTree.fromstring(r.content)
+                resultxml = rootxml.getiterator('work')
+            except Exception, e:
+                logger.error("Error finding results: " + str(e))
             author_dict = []
             resultcount = 0
             for author in resultxml:
@@ -127,7 +131,7 @@ class GoodReads:
 
                 resultcount = resultcount+1
 
-        except urllib2.HTTPError, err:                  
+        except requests.ConnectionError, err:
             if err.code == 404:
                 logger.info('Received a 404 error when searching for author')
             if err.code == 403:
@@ -143,24 +147,21 @@ class GoodReads:
 
     def find_author_id(self):
 
-        URL = 'http://www.goodreads.com/api/author_url/' + urllib.quote(self.name) + '?' + urllib.urlencode(self.params)
+        url = self.url + '/api/author_url/' + self.name
+        self.params['q'] = None
         logger.debug("Searching for author with name: %s" % self.name)
 
-        # Cache our request
-        request = urllib2.Request(URL)
-        if lazylibrarian.PROXY_HOST:
-            request.set_proxy(lazylibrarian.PROXY_HOST, lazylibrarian.PROXY_TYPE)
-        request.add_header('User-Agent', USER_AGENT)
-        opener = urllib2.build_opener(SimpleCache.CacheHandler(".AuthorCache"), SimpleCache.ThrottlingProcessor(5))
-        resp = opener.open(request)
-
         try:
-            sourcexml = ElementTree.parse(resp)
+            r = requests.get(url, params=self.params, timeout=self.timeout)
         except Exception, e:
-            logger.error("Error fetching authorid: " + str(e) + str(URL))
+            logger.error("Error finding results: " + str(e))
+        logger.debug('*** Author URL: %s' % r.url)
+        try:
+            rootxml = ElementTree.fromstring(r.content)
+            resultxml = rootxml.getiterator('author')
+        except Exception, e:
+            logger.error("Error fetching authorid: " + str(e) + str(r.url))
 
-        rootxml = sourcexml.getroot()
-        resultxml = rootxml.getiterator('author')
         authorlist = []
 
         if not len(rootxml):
@@ -179,30 +180,24 @@ class GoodReads:
 
     def get_author_info(self, authorid=None, authorname=None, refresh=False):
 
-        URL = 'http://www.goodreads.com/author/show/' + authorid + '.xml?' + urllib.urlencode(self.params)
-
-        # Cache our request
-        request = urllib2.Request(URL)
-        if lazylibrarian.PROXY_HOST:
-            request.set_proxy(lazylibrarian.PROXY_HOST, lazylibrarian.PROXY_TYPE)
-        request.add_header('User-Agent', USER_AGENT)
-        opener = urllib2.build_opener(SimpleCache.CacheHandler(".AuthorCache"), SimpleCache.ThrottlingProcessor(5))
-        resp = opener.open(request)
-
+        url = self.url + '/author/show/' + authorid + '.xml'
+        self.params['q'] = None
         try:
-            sourcexml = ElementTree.parse(resp)
-            rootxml = sourcexml.getroot()
+            r = requests.get(url, params=self.params, timeout=self.timeout)
+        except Exception, e:
+            logger.error("Error finding results: " + str(e))
+        logger.debug('*** Author show URL: %s' % r.url)
+        try:
+            rootxml = ElementTree.fromstring(r.content)
             resultxml = rootxml.find('author')
-            author_dict = {}
         except Exception, e:
             logger.error("Error fetching author ID: " + str(e))
 
+        author_dict = {}
         if not len(rootxml):
             logger.info('No author found with ID: ' + authorid)
-
         else:
             logger.info("[%s] Processing info for authorID: %s" % (authorname, authorid))
-
             author_dict = {
                 'authorid':   resultxml[0].text,
                 'authorlink':   resultxml.find('link').text,
@@ -217,34 +212,30 @@ class GoodReads:
     def get_author_books(self, authorid=None, authorname=None, refresh=False):
 
         api_hits = 0
-        URL = 'http://www.goodreads.com/author/list/' + authorid + '.xml?' + urllib.urlencode(self.params)
+        url = self.url + '/author/list/' + authorid + '.xml'
+        self.params['q'] = None
 
-        #Artist is loading
         myDB = database.DBConnection()
         controlValueDict = {"AuthorID": authorid}
         newValueDict = {"Status": "Loading"}
         myDB.upsert("authors", newValueDict, controlValueDict)
 
         try:
-            # Cache our request
-            request = urllib2.Request(URL)
-            if lazylibrarian.PROXY_HOST:
-                request.set_proxy(lazylibrarian.PROXY_HOST, lazylibrarian.PROXY_TYPE)
-            request.add_header('User-Agent', USER_AGENT)
-            opener = urllib2.build_opener(SimpleCache.CacheHandler(".AuthorCache"), SimpleCache.ThrottlingProcessor(5))
-            resp = opener.open(request)
-            api_hits = api_hits + 1
-            sourcexml = ElementTree.parse(resp)
+            r = requests.get(url, params=self.params, timeout=self.timeout)
+        except Exception, e:
+            logger.error("Error finding results: " + str(e))
+        logger.debug('*** Author list URL: %s' % r.url)
+        try:
+            rootxml = ElementTree.fromstring(r.content)
+            resultxml = rootxml.getiterator('book')
         except Exception, e:
             logger.error("Error fetching author info: " + str(e))
 
-        rootxml = sourcexml.getroot()
-        resultxml = rootxml.getiterator('book')
+        api_hits = api_hits + 1
         books_dict = []
 
         if not len(rootxml):
             logger.info('[%s] No books found for author with ID: %s' % (authorname, authorid))
-
         else:
             logger.info("[%s] Now processing books with GoodReads API" % authorname)
 
@@ -255,8 +246,7 @@ class GoodReads:
             updated_count = 0
             book_ignore_count = 0
             total_count = 0
-            logger.debug(u"url " + URL)
-
+            logger.debug(u'url ' + r.url)
             authorNameResult = rootxml.find('./author/name').text
             logger.debug(u"author name " + authorNameResult)
             loopCount = 1;
@@ -285,27 +275,21 @@ class GoodReads:
                     try:
                         time.sleep(1) #sleep 1 second to respect goodreads api terms
 
+                        #FIXME: Switch to search by id.
+                        #       Who cares if the book doesn't have an ISBN?
+                        #FIXME: This next chunk is duplicated. Use find_book()
                         if (book.find('isbn13').text is not None):
-                            BOOK_URL = 'http://www.goodreads.com/book/isbn?isbn=' + book.find('isbn13').text + '&' + urllib.urlencode(self.params) 
-
-                            logger.debug(u"Book URL: " + str(BOOK_URL))
-
+                            book_url = 'http://www.goodreads.com/book/isbn'
                             try:
-                                # Cache our request
-                                request = urllib2.Request(BOOK_URL)
-                                if lazylibrarian.PROXY_HOST:
-                                    request.set_proxy(lazylibrarian.PROXY_HOST, lazylibrarian.PROXY_TYPE)
-                                request.add_header('User-Agent', USER_AGENT)
-                                opener = urllib2.build_opener(SimpleCache.CacheHandler(".AuthorCache"), SimpleCache.ThrottlingProcessor(5))
-                                resp = opener.open(request)
+                                r2 = requests.get(book_url, params={'key':lazylibrarian.GR_API, 'isbn':book.find('isbn13').text}, timeout=self.timeout)
                             except Exception, e:
-                                logger.error("Error finding results: ", e)
-
-                            BOOK_sourcexml = ElementTree.parse(resp)
-                            BOOK_rootxml = BOOK_sourcexml.getroot()
-
-                            bookLanguage = BOOK_rootxml.find('./book/language_code').text
-
+                                logger.error("Error finding results: " + str(e))
+                            logger.debug('*** Book URL: ' + r2.url)
+                            try:
+                                book_rootxml = ElementTree.fromstring(r2.content)
+                                bookLanguage = book_rootxml.find('./book/language_code').text
+                            except Exception, e:
+                                logger.error("Error fetching book info: " + str(e))
                             logger.debug(u"language: " + str(bookLanguage))
                         else:
                             logger.debug("No ISBN provided, skipping")
@@ -391,23 +375,22 @@ class GoodReads:
                         removedResults = removedResults + 1
 
                 loopCount = loopCount + 1
-                URL = 'http://www.goodreads.com/author/list/' + authorid + '.xml?' + urllib.urlencode(self.params) + '&page=' + str(loopCount)
+                url1 = self.url + '/author/list/' + authorid + '.xml?'
+                self.params['q'] = None
+                self.params['page'] = str(loopCount)
 
                 try:
-                    # Cache our request
-                    request1 = urllib2.Request(URL)
-                    if lazylibrarian.PROXY_HOST:
-                        request1.set_proxy(lazylibrarian.PROXY_HOST, lazylibrarian.PROXY_TYPE)
-                    request1.add_header('User-Agent', USER_AGENT)
-                    opener1 = urllib2.build_opener(SimpleCache.CacheHandler(".AuthorCache"), SimpleCache.ThrottlingProcessor(5))
-                    resp1 = opener1.open(request1)
-                    api_hits = api_hits + 1
+                    r1 = requests.get(url1, params=self.params, timeout=self.timeout)
                 except Exception, e:
                     logger.error("Error finding results: " + str(e))				
+                logger.debug('*** Author List URL: %s' % r1.url)
+                try:
+                    rootxml = ElementTree.fromstring(r1.content)
+                    resultxml = rootxml.getiterator('book')
+                except Exception, e:
+                    logger.error("Error fetching author info: " + str(e))
 
-                sourcexml = ElementTree.parse(resp1)
-                rootxml = sourcexml.getroot()
-                resultxml = rootxml.getiterator('book')
+                api_hits = api_hits + 1
 
         logger.info('[%s] The GoodReads API was hit %s times to populate book list' % (authorname, str(api_hits)))
 
@@ -454,23 +437,19 @@ class GoodReads:
         threading.currentThread().name = "GR-ADD-BOOK"
         myDB = database.DBConnection()
 
-        URL = 'https://www.goodreads.com/book/show/' + bookid + '?' + urllib.urlencode(self.params)
+        url = self.url + '/book/show/' + bookid
+        self.params['q'] = None
 
         try:
-            # Cache our request
-            request = urllib2.Request(URL)
-            if lazylibrarian.PROXY_HOST:
-                request.set_proxy(lazylibrarian.PROXY_HOST, lazylibrarian.PROXY_TYPE)
-            request.add_header('User-Agent', USER_AGENT)
-            opener = urllib2.build_opener(SimpleCache.CacheHandler(".AuthorCache"), SimpleCache.ThrottlingProcessor(5))
-            resp = opener.open(request)
-            sourcexml = ElementTree.parse(resp)
+            r = requests.get(url, params=self.params, timeout=self.timeout)
+        except Exception, e:
+            logger.error("Error finding results: " + str(e))
+        logger.debug('*** Book show URL: %s' % r.url)
+        try:
+            rootxml = ElementTree.fromstring(r.content)
+            bookLanguage = rootxml.find('./book/language_code').text
         except Exception, e:
             logger.error("Error fetching book info: " + str(e))
-
-        rootxml = sourcexml.getroot()
-
-        bookLanguage = rootxml.find('./book/language_code').text
 
         if not bookLanguage:
             bookLanguage = "Unknown"
@@ -528,6 +507,5 @@ class GoodReads:
             "BookAdded":    formatter.today()
         }
 
-        #print newValueDict
         myDB.upsert("books", newValueDict, controlValueDict)
         logger.info("%s added to the books database" % bookname)
