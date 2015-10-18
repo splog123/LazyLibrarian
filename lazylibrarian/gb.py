@@ -249,6 +249,15 @@ class GoogleBooks:
                     except KeyError:
                         logger.debug('Skipped a result without authorfield.')
                         continue
+                    # GB does partial searches on authors, must check full author name
+                    author_found = False
+                    for author in item['volumeInfo']['authors']:
+                        if author == authorname:
+                            author_found = True
+                            break
+                    if author_found == False:
+                        logger.debug('Author %s not an author for this book' % authorname)
+                        continue
 
                     try:
                         #skip if language is in ignore list
