@@ -155,7 +155,6 @@ class GoodReads:
             r = requests.get(url, params=self.params, timeout=self.timeout)
         except Exception, e:
             logger.error("Error finding results: " + str(e))
-        logger.debug('*** Author URL: %s' % r.url)
         try:
             rootxml = ElementTree.fromstring(r.content)
             resultxml = rootxml.getiterator('author')
@@ -186,7 +185,6 @@ class GoodReads:
             r = requests.get(url, params=self.params, timeout=self.timeout)
         except Exception, e:
             logger.error("Error finding results: " + str(e))
-        logger.debug('*** Author show URL: %s' % r.url)
         try:
             rootxml = ElementTree.fromstring(r.content)
             resultxml = rootxml.find('author')
@@ -224,7 +222,6 @@ class GoodReads:
             r = requests.get(url, params=self.params, timeout=self.timeout)
         except Exception, e:
             logger.error("Error finding results: " + str(e))
-        logger.debug('*** Author list URL: %s' % r.url)
         try:
             rootxml = ElementTree.fromstring(r.content)
             resultxml = rootxml.getiterator('book')
@@ -284,7 +281,6 @@ class GoodReads:
                                 r2 = requests.get(book_url, params={'key':lazylibrarian.GR_API, 'isbn':book.find('isbn13').text}, timeout=self.timeout)
                             except Exception, e:
                                 logger.error("Error finding results: " + str(e))
-                            logger.debug('*** Book URL: ' + r2.url)
                             try:
                                 book_rootxml = ElementTree.fromstring(r2.content)
                                 bookLanguage = book_rootxml.find('./book/language_code').text
@@ -383,7 +379,6 @@ class GoodReads:
                     r1 = requests.get(url1, params=self.params, timeout=self.timeout)
                 except Exception, e:
                     logger.error("Error finding results: " + str(e))				
-                logger.debug('*** Author List URL: %s' % r1.url)
                 try:
                     rootxml = ElementTree.fromstring(r1.content)
                     resultxml = rootxml.getiterator('book')
@@ -444,7 +439,6 @@ class GoodReads:
             r = requests.get(url, params=self.params, timeout=self.timeout)
         except Exception, e:
             logger.error("Error finding results: " + str(e))
-        logger.debug('*** Book show URL: %s' % r.url)
         try:
             rootxml = ElementTree.fromstring(r.content)
             bookLanguage = rootxml.find('./book/language_code').text
